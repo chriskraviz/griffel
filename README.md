@@ -8,7 +8,7 @@ This is a learning and experimentation project, not a polished product.
 
 > Preview status: bring your own OpenAI API key, no hosted backend, no warranty, no support guarantee.
 >
-> Griffel is derived from **Blitztext** (MIT). The app, bundle identifier, and data folders migrate forward automatically from a Blitztext installation (see [Upgrading from Blitztext](#upgrading-from-blitztext)).
+> Griffel is derived from [**Blitztext**](https://github.com/cmagnussen/blitztext-app) (MIT). The app, bundle identifier, and data folders migrate forward automatically from a Blitztext installation (see [Upgrading from Blitztext](#upgrading-from-blitztext)).
 
 ## What It Does
 
@@ -268,6 +268,8 @@ The current direction is documented in [ROADMAP.md](ROADMAP.md), version history
 ## License
 
 Code is released under the MIT License. See [LICENSE](LICENSE).
+
+Griffel is a derivative of [Blitztext](https://github.com/cmagnussen/blitztext-app) by cmagnussen and its contributors, also released under the MIT License — thank you for the foundation this app grew from.
 
 Project names, logos, and app icons are not automatically granted as trademarks or brand assets. See [TRADEMARKS.md](TRADEMARKS.md).
 
