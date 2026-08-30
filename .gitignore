@@ -1,0 +1,43 @@
+# Xcode
+*.xcuserstate
+*.xcuserdatad/
+xcuserdata/
+*.xcodeproj/
+DerivedData/
+.derivedData*/
+build/
+*.xcarchive
+*.dSYM
+*.dSYM.zip
+
+# macOS
+.DS_Store
+
+# Local app artifacts
+Griffel.app
+dist/
+models/
+*.mlmodel
+*.mlmodelc/
+*.mlpackage/
+
+# Secrets and local config
+.env
+.env.*
+*.local
+Secrets.swift
+*.xcconfig
+
+# Tooling
+node_modules/
+
+# Lokale Signier-Identitaet (siehe README, "A stable signing identity")
+.codesign-identity
+
+# Lokale Arbeitsunterlagen: das Claude-Code-Briefing und dessen Ablage bleiben
+# auf der Maschine. Im privaten Archiv ist CLAUDE.md committet (getrackte
+# Dateien gewinnen gegen ignore); im oeffentlichen Repo liegt es untracked
+# daneben und darf nie einchecken.
+.claude/
+.claude-flow/
+/CLAUDE.md

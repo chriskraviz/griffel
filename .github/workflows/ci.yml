@@ -1,0 +1,140 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  # Der Scan braucht kein macOS. Der macOS-Runner ist der teure Teil dieser
+  # Pipeline - in einem privaten Repository zaehlt seine Minute zehnfach gegen
+  # das Kontingent, und auch dort, wo Minuten frei sind, bleibt er der
+  # langsamste, knappste Schritt. Der Scan dagegen laeuft immer, auch bei
+  # reinen Textaenderungen: ein Schluessel passt genauso in eine README wie in
+  # eine Swift-Datei.
+  secret-scan:
+    name: Secret hygiene scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      build-needed: ${{ steps.scope.outputs.build-needed }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          # Der naechste Schritt vergleicht zwei Commits, also reicht ein
+          # flacher Checkout nicht.
+          fetch-depth: 0
+
+      - name: Secret hygiene scan
+        run: |
+          patterns_file=.github/secret-scan-patterns.txt
+          if [ ! -f "$patterns_file" ]; then
+            echo "Missing $patterns_file"
+            exit 1
+          fi
+          pattern="$(grep -vE '^[[:space:]]*(#|$)' "$patterns_file" | paste -sd'|' -)"
+          if [ -z "$pattern" ]; then
+            echo "No patterns loaded from $patterns_file"
+            exit 1
+          fi
+          if grep -RInE \
+              --exclude-dir=.git \
+              --exclude=secret-scan-patterns.txt \
+              "$pattern" .; then
+            echo "Potential secret or private project reference found."
+            exit 1
+          fi
+
+      # Der macOS-Build ist der teure Teil und muss nicht laufen, wenn sich nur
+      # Text geaendert hat. Die Liste ist absichtlich eng: alles unter
+      # GriffelMac/ bleibt drin, auch die Icon-PNGs — der Asset-Katalog wird von
+      # actool kompiliert und kann den Build sehr wohl kippen. Laesst sich kein
+      # Vergleichspunkt bestimmen, wird gebaut.
+      - name: Decide whether the build has anything to check
+        id: scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [ -z "$BASE_SHA" ] \
+            || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ] \
+            || ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            echo "No usable base commit — building."
+            echo "build-needed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Drei Punkte, nicht zwei: gefragt ist, was dieser Zweig seit der
+          # Merge-Base geaendert hat, nicht der Unterschied zu einem Basis-
+          # Branch, der inzwischen selbst weitergelaufen ist. Bei einem Push
+          # ist die Basis ein Vorfahre und beide Formen sind dasselbe.
+          changed="$(git diff --name-only "$BASE_SHA...$HEAD_SHA")"
+          if [ -z "$changed" ]; then
+            echo "Nothing changed — skipping the macOS build."
+            echo "build-needed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "Changed:"
+          echo "$changed" | sed 's/^/  /'
+
+          text_only='(\.md$|^docs/|^LICENSE$|^\.github/ISSUE_TEMPLATE/)'
+          if echo "$changed" | grep -qvE "$text_only"; then
+            echo "build-needed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Text only — skipping the macOS build."
+            echo "build-needed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build-macos:
+    name: Build macOS app
+    needs: secret-scan
+    # Faellt der Scan durch, startet der teure Runner erst gar nicht.
+    if: needs.secret-scan.outputs.build-needed == 'true'
+    runs-on: macos-26
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # mlx-swift-lm ships a swift-tools-version 6.2 manifest, so Xcode 16 can
+      # no longer resolve the package graph. The runner image carries no
+      # /Applications/Xcode_26.app exactly, so pick the newest Xcode_26* if the
+      # image has one and otherwise trust its default — then assert the version
+      # instead of finding out at package-resolution time.
+      - name: Select Xcode
+        run: |
+          candidate="$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1 || true)"
+          if [ -n "$candidate" ]; then
+            echo "Selecting $candidate"
+            sudo xcode-select -s "$candidate"
+          else
+            echo "No Xcode_26* on this image; using the default toolchain."
+          fi
+          xcodebuild -version
+          major="$(xcodebuild -version | awk 'NR==1 { split($2, v, "."); print v[1] }')"
+          if [ "$major" -lt 26 ]; then
+            echo "::error::Xcode 26 or newer is required (mlx-swift-lm needs swift-tools-version 6.2); found $major."
+            exit 1
+          fi
+
+      # MLX compiles Metal shaders, and Xcode 26 ships the Metal toolchain as a
+      # separate downloadable component.
+      - name: Download Metal toolchain
+        run: xcodebuild -downloadComponent MetalToolchain
+
+      - name: Install XcodeGen
+        run: |
+          if ! command -v xcodegen >/dev/null 2>&1; then
+            brew install xcodegen
+          fi
+
+      - name: Build
+        run: ./build.sh --debug

@@ -1,0 +1,86 @@
+name: GriffelMac
+options:
+  bundleIdPrefix: app.griffel
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "26.0"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    ONLY_ACTIVE_ARCH: NO
+    MARKETING_VERSION: "1.5.0"
+    CURRENT_PROJECT_VERSION: "15"
+
+packages:
+  # 1.1.0 statt 0.18.0: die alte Version pinnt swift-transformers auf 1.1.x und
+  # kollidiert damit mit dem Tokenizer, den MLX braucht. Ab 1.1.0 bringt
+  # WhisperKit seinen Tokenizer selbst mit.
+  ArgmaxOSS:
+    url: https://github.com/argmaxinc/argmax-oss-swift.git
+    exactVersion: 1.1.0
+  MLXLM:
+    url: https://github.com/ml-explore/mlx-swift-lm.git
+    exactVersion: 3.31.3
+  SwiftHuggingFace:
+    url: https://github.com/huggingface/swift-huggingface.git
+    minVersion: 0.9.0
+    maxVersion: 1.0.0
+  SwiftTransformers:
+    url: https://github.com/huggingface/swift-transformers.git
+    minVersion: 1.3.0
+    maxVersion: 2.0.0
+
+targets:
+  GriffelMac:
+    type: application
+    platform: macOS
+    sources:
+      - path: App
+      - path: Features
+      - path: Services
+      - path: Views
+      - path: Resources
+        buildPhase: resources
+        excludes:
+          - AppIcon.icns
+          - Info.plist
+          - GriffelMac.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.griffel.mac
+        PRODUCT_NAME: Griffel
+        INFOPLIST_FILE: Resources/Info.plist
+        INFOPLIST_KEY_CFBundleShortVersionString: $(MARKETING_VERSION)
+        INFOPLIST_KEY_CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CODE_SIGN_ENTITLEMENTS: Resources/GriffelMac.entitlements
+        ENABLE_HARDENED_RUNTIME: true
+        ARCHS: arm64
+        COMBINE_HIDPI_IMAGES: true
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    dependencies:
+      - package: ArgmaxOSS
+        product: WhisperKit
+      # Lokale Nachbearbeitung laeuft in-process ueber MLX (Qwen3). MLX rechnet
+      # ueber Metal auf der unified memory der M-Serie -- deshalb ist der Build
+      # seit dieser Abhaengigkeit arm64-only, siehe build.sh.
+      - package: MLXLM
+        product: MLXLLM
+      - package: MLXLM
+        product: MLXLMCommon
+      - package: MLXLM
+        product: MLXHuggingFace
+      # MLXHuggingFace liefert nur Makros -- HubClient und AutoTokenizer muessen
+      # vom Consumer kommen.
+      - package: SwiftHuggingFace
+        product: HuggingFace
+      - package: SwiftTransformers
+        product: Tokenizers
+    entitlements:
+      path: Resources/GriffelMac.entitlements
+      properties:
+        com.apple.security.app-sandbox: false
+        com.apple.security.device.audio-input: true
+        com.apple.security.network.client: true
