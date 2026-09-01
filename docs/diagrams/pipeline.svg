@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1088 838" role="img" aria-label="A dictation run: hotkey to AppState to workflow to recorder, then transcription and rewriting each fork between an on-device model and an OpenAI endpoint across a dashed device boundary, ending in a paste into the target app.">
+  <title>Griffel — one dictation run, end to end</title>
+  <style>
+  :root {
+    --surface: #FFFFFF; --sunken: #E4E7F1; --ink: #171A26; --muted: #666C82;
+    --line: #D6D9E6; --on: #0E766C; --off: #B4451F;
+    color: var(--ink);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --surface: #161923; --sunken: #1F2432; --ink: #E6E8F2; --muted: #98A0B6;
+      --line: #2A2F3E; --on: #46C6B2; --off: #F08C5E;
+    }
+  }
+  .card { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+  .d-box { fill: var(--surface); stroke: var(--line); stroke-width: 1.4; }
+  .d-box-q { fill: var(--sunken); stroke: var(--line); stroke-width: 1.4; }
+  .d-box-on { fill: var(--surface); stroke: var(--on); stroke-width: 1.6; }
+  .d-box-off { fill: var(--surface); stroke: var(--off); stroke-width: 1.6; }
+  .d-t { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 13px; font-weight: 500; fill: var(--ink); }
+  .d-s { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 11.5px; fill: var(--muted); }
+  .d-l { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 10.5px; fill: var(--muted); }
+  .d-k { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 12px; fill: var(--muted); }
+  .d-on { fill: var(--on); }
+  .d-off { fill: var(--off); }
+  .w { stroke: currentColor; stroke-width: 1.4; fill: none; opacity: .55; }
+  .w-on { stroke: var(--on); stroke-width: 1.6; fill: none; }
+  .w-off { stroke: var(--off); stroke-width: 1.6; fill: none; }
+  .w-dash { stroke: currentColor; stroke-width: 1.2; fill: none; opacity: .45; stroke-dasharray: 4 4; }
+</style>
+  <rect class="card" x="0.75" y="0.75" width="1086.5" height="836.5" rx="6"/>
+  <g transform="translate(24,26)">
+      <defs>
+        <marker id="f1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="currentColor" opacity=".55"/></marker>
+        <marker id="f1on" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="var(--on)"/></marker>
+        <marker id="f1off" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="var(--off)"/></marker>
+      </defs>
+
+      <!-- device boundary, broken exactly where data crosses it -->
+      <line x1="680" y1="30" x2="680" y2="386" class="w-off" stroke-dasharray="5 6" opacity=".8"/>
+      <line x1="680" y1="430" x2="680" y2="486" class="w-off" stroke-dasharray="5 6" opacity=".8"/>
+      <line x1="680" y1="530" x2="680" y2="710" class="w-off" stroke-dasharray="5 6" opacity=".8"/>
+      <text x="666" y="24" class="d-l" text-anchor="end">stays on this Mac</text>
+      <text x="694" y="24" class="d-l d-off">api.openai.com</text>
+
+      <!-- spine -->
+      <rect x="400" y="44" width="240" height="48" rx="3" class="d-box"/>
+      <text x="416" y="65" class="d-t">HotkeyService</text>
+      <text x="416" y="81" class="d-s">fn chord · Carbon hotkey · Esc</text>
+
+      <rect x="400" y="124" width="240" height="48" rx="3" class="d-box"/>
+      <text x="416" y="145" class="d-t">AppState</text>
+      <text x="416" y="161" class="d-s">startWorkflow(type:source:)</text>
+
+      <rect x="400" y="204" width="240" height="48" rx="3" class="d-box"/>
+      <text x="416" y="225" class="d-t">Workflow object</text>
+      <text x="416" y="241" class="d-s">@MainActor @Observable</text>
+
+      <rect x="400" y="284" width="240" height="48" rx="3" class="d-box"/>
+      <text x="416" y="305" class="d-t">AudioRecorder</text>
+      <text x="416" y="321" class="d-s">AVAudioEngine → AAC .m4a (temp)</text>
+
+      <rect x="400" y="384" width="240" height="48" rx="3" class="d-box-q"/>
+      <text x="416" y="405" class="d-t">Transcription</text>
+      <text x="416" y="421" class="d-s">backend picked at build time</text>
+
+      <rect x="400" y="484" width="240" height="48" rx="3" class="d-box-q"/>
+      <text x="416" y="505" class="d-t">Rewrite pass</text>
+      <text x="416" y="521" class="d-s">Griffel+ · selection · app profile</text>
+
+      <rect x="400" y="584" width="240" height="48" rx="3" class="d-box"/>
+      <text x="416" y="605" class="d-t">handleWorkflowOutput</text>
+      <text x="416" y="621" class="d-s">count · record · paste</text>
+
+      <rect x="400" y="664" width="240" height="48" rx="3" class="d-box"/>
+      <text x="416" y="685" class="d-t">Target app</text>
+      <text x="416" y="701" class="d-s">synthetic ⌘V at the caret</text>
+
+      <!-- spine arrows -->
+      <line x1="520" y1="92" x2="520" y2="120" class="w" marker-end="url(#f1a)"/>
+      <line x1="520" y1="172" x2="520" y2="200" class="w" marker-end="url(#f1a)"/>
+      <line x1="520" y1="252" x2="520" y2="280" class="w" marker-end="url(#f1a)"/>
+      <line x1="520" y1="332" x2="520" y2="380" class="w" marker-end="url(#f1a)"/>
+      <line x1="520" y1="432" x2="520" y2="480" class="w" marker-end="url(#f1a)"/>
+      <line x1="520" y1="532" x2="520" y2="580" class="w" marker-end="url(#f1a)"/>
+      <line x1="520" y1="632" x2="520" y2="660" class="w" marker-end="url(#f1a)"/>
+      <text x="532" y="110" class="d-l">key down / key up</text>
+      <text x="532" y="190" class="d-l">builds + wires handlers</text>
+      <text x="532" y="270" class="d-l">start()</text>
+      <text x="532" y="360" class="d-l">stop() → finished file</text>
+      <text x="532" y="460" class="d-l">cleaned transcript</text>
+      <text x="532" y="560" class="d-l">final text</text>
+      <text x="532" y="652" class="d-l">paste</text>
+
+      <!-- taps off the recorder -->
+      <rect x="60" y="262" width="280" height="44" rx="3" class="d-box-on"/>
+      <text x="76" y="282" class="d-t">LiveTranscriptionController</text>
+      <text x="76" y="297" class="d-s">16 kHz partials every 1.5 s · local only</text>
+
+      <rect x="60" y="316" width="280" height="44" rx="3" class="d-box-on"/>
+      <text x="76" y="336" class="d-t">SilenceAutoStopService</text>
+      <text x="76" y="351" class="d-s">level → auto-stop after a pause</text>
+
+      <polyline points="400,296 372,296 372,284 344,284" class="w-dash" marker-end="url(#f1a)"/>
+      <polyline points="400,320 372,320 372,338 344,338" class="w-dash" marker-end="url(#f1a)"/>
+      <text x="356" y="252" class="d-l" text-anchor="middle">taps</text>
+
+      <!-- transcription fork -->
+      <rect x="60" y="386" width="280" height="44" rx="3" class="d-box-on"/>
+      <text x="76" y="406" class="d-t d-on">LocalTranscriptionService</text>
+      <text x="76" y="421" class="d-s">WhisperKit · CoreML · on device</text>
+      <line x1="396" y1="408" x2="344" y2="408" class="w-on" marker-end="url(#f1on)" marker-start="url(#f1on)"/>
+
+      <rect x="720" y="386" width="280" height="44" rx="3" class="d-box-off"/>
+      <text x="736" y="406" class="d-t d-off">POST /v1/audio/transcriptions</text>
+      <text x="736" y="421" class="d-s">whisper-1 · multipart upload</text>
+      <line x1="644" y1="408" x2="716" y2="408" class="w-off" marker-end="url(#f1off)" marker-start="url(#f1off)"/>
+      <text x="680" y="400" class="d-l d-off" text-anchor="middle">audio ↑ text ↓</text>
+
+      <!-- rewrite fork -->
+      <rect x="60" y="486" width="280" height="44" rx="3" class="d-box-on"/>
+      <text x="76" y="506" class="d-t d-on">LocalLLMService</text>
+      <text x="76" y="521" class="d-s">MLX · Metal · Qwen3, in-process</text>
+      <line x1="396" y1="508" x2="344" y2="508" class="w-on" marker-end="url(#f1on)" marker-start="url(#f1on)"/>
+
+      <rect x="720" y="486" width="280" height="44" rx="3" class="d-box-off"/>
+      <text x="736" y="506" class="d-t d-off">POST /v1/chat/completions</text>
+      <text x="736" y="521" class="d-s">gpt-4o-mini · gpt-4o</text>
+      <line x1="644" y1="508" x2="716" y2="508" class="w-off" marker-end="url(#f1off)" marker-start="url(#f1off)"/>
+      <text x="680" y="500" class="d-l d-off" text-anchor="middle">draft ↑ version ↓</text>
+
+      <!-- local sinks -->
+      <rect x="60" y="586" width="280" height="44" rx="3" class="d-box-on"/>
+      <text x="76" y="606" class="d-t d-on">PhraseStore · StatsStore</text>
+      <text x="76" y="621" class="d-s">counts only, local JSON</text>
+      <line x1="396" y1="608" x2="344" y2="608" class="w-on" marker-end="url(#f1on)"/>
+    
+      <g>
+        <line x1="0" y1="760" x2="22" y2="760" class="w-on" stroke-width="2"/>
+        <text x="30" y="764" class="d-k">never leaves the Mac</text>
+        <line x1="218" y1="760" x2="240" y2="760" class="w-off" stroke-width="2"/>
+        <text x="248" y="764" class="d-k">crosses to OpenAI</text>
+        <text x="420" y="764" class="d-k">&#8596;&#8202; request and response on one connection</text>
+      </g>
+  </g>
+</svg>

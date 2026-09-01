@@ -203,6 +203,8 @@ Full Disk Access is not required. If auto-paste does not work even though transc
 
 The preview has no custom backend.
 
+<img src="docs/diagrams/pipeline.svg" alt="A dictation run: hotkey to AppState to workflow to recorder, then transcription and rewriting each fork between an on-device model and an OpenAI endpoint across a dashed device boundary, ending in a paste into the target app.">
+
 ```text
 Leaves your Mac (unless Sicherer Lokaler Modus is on):
   Transcription:         Your Mac -> OpenAI Audio Transcriptions API
@@ -226,7 +228,7 @@ Never leaves your Mac:
 
 The app stores your OpenAI API key in the user's macOS Keychain.
 
-The full pipeline — including the two points where data can cross to OpenAI, and how Sicherer Lokaler Modus closes them — is drawn in [docs/architecture.md](docs/architecture.md).
+The remaining figures — the workflow classes, `AppState` as the switchboard, and the build chain — are drawn in [docs/architecture.md](docs/architecture.md).
 
 Read [docs/privacy.md](docs/privacy.md) before using the preview with sensitive content.
 
