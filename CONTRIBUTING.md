@@ -4,6 +4,8 @@ Thanks for taking a look at Griffel macOS Preview.
 
 This repository is intentionally a preview. Contributions should make it easier to learn from, build, fork, or safely extend.
 
+Before your first change, [docs/architecture.md](docs/architecture.md) is worth ten minutes: it maps the dictation pipeline, the workflow classes, and where things live on disk — including a "start here" table for common kinds of changes.
+
 ## Good First Contributions
 
 - improve build instructions

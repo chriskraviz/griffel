@@ -226,6 +226,8 @@ Never leaves your Mac:
 
 The app stores your OpenAI API key in the user's macOS Keychain.
 
+The full pipeline — including the two points where data can cross to OpenAI, and how Sicherer Lokaler Modus closes them — is drawn in [docs/architecture.md](docs/architecture.md).
+
 Read [docs/privacy.md](docs/privacy.md) before using the preview with sensitive content.
 
 ## Project Structure
@@ -239,8 +241,10 @@ GriffelMac/
   Views/        Shared SwiftUI views and the glass design system
 build.sh        Local build script
 scripts/        reset-app.sh — reset permissions and stale app copies
-docs/           Setup, privacy, local model guides, screenshots, preflight checklist
+docs/           Architecture, setup, privacy, local model guides, screenshots, preflight checklist
 ```
+
+For an illustrated tour of how these pieces fit together — the dictation pipeline, the three workflow classes, `AppState` as the switchboard, and the build — see [docs/architecture.md](docs/architecture.md).
 
 ## Local Models
 

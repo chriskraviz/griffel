@@ -8,6 +8,16 @@ lives in `GriffelMac/project.yml` (`MARKETING_VERSION`) and is shown in the
 app under Einstellungen → Zugang → Installation & Updates. Releases are
 source-only — no binary is attached; build from the tag with `./build.sh`.
 
+## [Unreleased]
+
+### Added
+
+- `docs/architecture.md`: an illustrated architecture overview — the
+  dictation pipeline end to end, the four-modes/three-classes workflow
+  mapping, AppState as the switchboard, the on-disk layout, and the build
+  chain — drawn as Mermaid diagrams that GitHub renders natively. Linked
+  from the README (Data Flow, Project Structure) and CONTRIBUTING.
+
 ## [1.5.1] - 2026-09-01
 
 ### Fixed
