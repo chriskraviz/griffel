@@ -149,10 +149,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
             appState.startWorkflow(type, source: .hotkeyBackground)
 
         case .toggle:
-            // Toggle mode: if already recording same workflow, stop it
+            // Toggle mode: if already recording same workflow, stop it.
+            // `isRecording`, not the phase: after a silence auto-stop the
+            // phase is still .running while the transcript is produced, and
+            // a press then means "next dictation", not "discard that work".
             if let active = appState.activeWorkflow,
                active.type == type,
-               active.phase.isActive {
+               active.isRecording {
                 active.stop()
             } else {
                 appState.prepareForPopoverPresentation()
@@ -167,13 +170,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate {
 
         guard mode == .hold else { return }
 
-        // Hold mode: stop recording on key release
+        // Hold mode: stop recording on key release. `isRecording`, not the
+        // .running phase: after a silence auto-stop the phase is still
+        // .running ("Wird transkribiert ...") while the transcript is
+        // produced, and stop() would then cancel that task — the release
+        // that ends the hold must never cost the dictation its result.
         if let active = appState.activeWorkflow,
-           active.type == type {
-            // Only stop if currently recording (running phase)
-            if case .running = active.phase {
-                active.stop()
-            }
+           active.type == type,
+           active.isRecording {
+            active.stop()
         }
     }
 
