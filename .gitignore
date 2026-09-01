@@ -37,7 +37,9 @@ node_modules/
 # Lokale Arbeitsunterlagen: das Claude-Code-Briefing und dessen Ablage bleiben
 # auf der Maschine. Im privaten Archiv ist CLAUDE.md committet (getrackte
 # Dateien gewinnen gegen ignore); im oeffentlichen Repo liegt es untracked
-# daneben und darf nie einchecken.
+# daneben und darf nie einchecken. AGENTS.md ist die Codex-Spiegelung
+# desselben Briefings und unterliegt derselben Regel.
 .claude/
 .claude-flow/
 /CLAUDE.md
+/AGENTS.md
