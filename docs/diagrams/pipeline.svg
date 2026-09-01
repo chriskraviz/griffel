@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1088 838" role="img" aria-label="A dictation run: hotkey to AppState to workflow to recorder, then transcription and rewriting each fork between an on-device model and an OpenAI endpoint across a dashed device boundary, ending in a paste into the target app.">
+<svg xmlns="http://www.w3.org/2000/svg" width="1088" height="838" viewBox="0 0 1088 838" role="img" aria-label="A dictation run: hotkey to AppState to workflow to recorder, then transcription and rewriting each fork between an on-device model and an OpenAI endpoint across a dashed device boundary, ending in a paste into the target app.">
   <title>Griffel — one dictation run, end to end</title>
   <style>
   :root {

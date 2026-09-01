@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1088 460" role="img" aria-label="AppState sits between the views and hotkeys that call into it on the left, and the menu-bar, HUD and window controllers plus the stores it owns on the right.">
+<svg xmlns="http://www.w3.org/2000/svg" width="1088" height="460" viewBox="0 0 1088 460" role="img" aria-label="AppState sits between the views and hotkeys that call into it on the left, and the menu-bar, HUD and window controllers plus the stores it owns on the right.">
   <title>Griffel — AppState as the switchboard</title>
   <style>
   :root {

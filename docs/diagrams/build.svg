@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1088 250" role="img" aria-label="Build pipeline: project.yml through XcodeGen and xcodebuild, which also pulls four pinned Swift packages, then codesign, producing Griffel.app.">
+<svg xmlns="http://www.w3.org/2000/svg" width="1088" height="250" viewBox="0 0 1088 250" role="img" aria-label="Build pipeline: project.yml through XcodeGen and xcodebuild, which also pulls four pinned Swift packages, then codesign, producing Griffel.app.">
   <title>Griffel — build pipeline from project.yml to Griffel.app</title>
   <style>
   :root {
