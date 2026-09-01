@@ -19,6 +19,16 @@ source-only — no binary is attached; build from the tag with `./build.sh`.
   light and dark mode; the pipeline figure also opens the README's Data
   Flow section. Linked from the README and CONTRIBUTING.
 
+### Fixed
+
+- Pressing fn+Option+Shift for Auswahl bearbeiten often started a plain
+  transcription instead. The modifiers of a chord arrive as separate keyboard
+  events, so the moment the fn+Shift subset was complete the transcription
+  chord fired and locked out the longer chord still being pressed. A chord
+  that is a subset of another now waits out a short grace period (180 ms) so
+  the longer chord wins; releasing within the grace period still counts as a
+  press, which keeps quick taps in toggle mode working.
+
 ## [1.5.1] - 2026-09-01
 
 ### Fixed
