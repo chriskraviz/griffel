@@ -85,6 +85,11 @@ final class AppState {
     private var menuBarStatusResetTask: Task<Void, Never>?
     private var workflowCleanupTask: Task<Void, Never>?
     private var processingStartedAt: Date?
+    /// A run whose recording ended (silence auto-stop) but whose transcript
+    /// is still being produced when the next dictation starts. It finishes on
+    /// the side and pastes its own result; stopping it instead would cancel
+    /// the transcription task and silently discard everything spoken.
+    private var finishingWorkflow: (any Workflow)?
 
     // Persisted settings
     var appSettings: AppSettings {
@@ -645,7 +650,17 @@ final class AppState {
             return
         }
 
-        activeWorkflow?.stop()
+        // A previous dictation can still be transcribing here — silence
+        // auto-stop ended its recording and the user is already starting the
+        // next one. stop() would cancel that transcription task and discard
+        // everything spoken, so it is left to finish on the side instead; its
+        // handlers carry their own paste target. Everything else (recording,
+        // done, error) is genuinely superseded and stops.
+        if let active = activeWorkflow, case .running = active.phase, !active.isRecording {
+            finishingWorkflow = active
+        } else {
+            activeWorkflow?.stop()
+        }
         menuBarStatusResetTask?.cancel()
         workflowCleanupTask?.cancel()
         activeLaunchSource = source
@@ -1116,28 +1131,32 @@ final class AppState {
         }
     }
 
-    private func handleWorkflowOutput(_ text: String) {
-        ingestPhrasesIfEnabled(outputText: text)
-        recordUsageEvent(outputText: text)
-        pasteAtCursor(text, target: activePasteTarget)
-        if activeLaunchSource == .hotkeyBackground {
-            page = .main
+    private func handleWorkflowOutput(_ text: String, from workflow: any Workflow, target: PasteTarget?) {
+        ingestPhrasesIfEnabled(outputText: text, workflowType: workflow.type)
+        recordUsageEvent(outputText: text, workflow: workflow)
+        pasteAtCursor(text, target: target)
+        if workflow === activeWorkflow {
+            if activeLaunchSource == .hotkeyBackground {
+                page = .main
+            }
+            scheduleWorkflowCleanup(after: 1.05)
+        } else if finishingWorkflow === workflow {
+            // A detached run's job ends with its paste; the follow-up
+            // dictation owns page, HUD and cleanup.
+            finishingWorkflow = nil
         }
-        scheduleWorkflowCleanup(after: 1.05)
     }
 
     /// Feeds the local phrase-frequency store. Selection edit is excluded:
     /// its output transforms arbitrary pre-existing text, not the user's
     /// own dictation, and would quietly index foreign text.
-    private func ingestPhrasesIfEnabled(outputText: String) {
+    private func ingestPhrasesIfEnabled(outputText: String, workflowType: WorkflowType) {
         guard appSettings.phraseDetectionEnabled,
-              let type = activeWorkflow?.type,
-              type != .selectionEdit else { return }
+              workflowType != .selectionEdit else { return }
         PhraseStore.shared.ingest(text: outputText)
     }
 
-    private func recordUsageEvent(outputText: String) {
-        guard let workflow = activeWorkflow else { return }
+    private func recordUsageEvent(outputText: String, workflow: any Workflow) {
         let wordCount = outputText.split { $0.isWhitespace || $0.isNewline }.count
         StatsStore.shared.record(
             workflowType: workflow.type,
@@ -1149,8 +1168,14 @@ final class AppState {
     }
 
     private func configureWorkflowHandlers<T: Workflow>(_ workflow: T) {
-        workflow.onOutput = { [weak self] text in
-            self?.handleWorkflowOutput(text)
+        // The paste target is captured now, at start — not read when the
+        // output arrives: a follow-up dictation may have replaced
+        // `activePasteTarget` by then, and this result still belongs to the
+        // run it came from.
+        let target = activePasteTarget
+        workflow.onOutput = { [weak self, weak workflow] text in
+            guard let self, let workflow else { return }
+            self.handleWorkflowOutput(text, from: workflow, target: target)
         }
         workflow.onPhaseChange = { [weak self, weak workflow] phase in
             guard let self, let workflow else { return }
@@ -1161,15 +1186,19 @@ final class AppState {
     /// Braindump captures like a transcription but never pastes: the result
     /// goes into the local inbox instead.
     private func configureBraindumpHandlers(_ workflow: TranscriptionWorkflow) {
-        workflow.onOutput = { [weak self] text in
-            guard let self else { return }
-            self.ingestPhrasesIfEnabled(outputText: text)
-            self.recordUsageEvent(outputText: text)
+        workflow.onOutput = { [weak self, weak workflow] text in
+            guard let self, let workflow else { return }
+            self.ingestPhrasesIfEnabled(outputText: text, workflowType: workflow.type)
+            self.recordUsageEvent(outputText: text, workflow: workflow)
             BraindumpStore.shared.add(text: text, captureContext: self.activeCaptureContext)
-            if self.isPopoverShown, self.page == .workflow {
-                self.page = .braindump
+            if workflow === self.activeWorkflow {
+                if self.isPopoverShown, self.page == .workflow {
+                    self.page = .braindump
+                }
+                self.scheduleWorkflowCleanup(after: 1.05)
+            } else if self.finishingWorkflow === workflow {
+                self.finishingWorkflow = nil
             }
-            self.scheduleWorkflowCleanup(after: 1.05)
         }
         workflow.onPhaseChange = { [weak self, weak workflow] phase in
             guard let self, let workflow else { return }
@@ -1178,6 +1207,16 @@ final class AppState {
     }
 
     private func handleWorkflowPhaseChange(_ phase: WorkflowPhase, workflow: any Workflow) {
+        // A run detached to finish on the side reports here too, but only the
+        // active one may drive menu bar, HUD and page — a late .error from
+        // the old run must not tear down the recording that replaced it.
+        guard workflow === activeWorkflow else {
+            if case .error = phase, finishingWorkflow === workflow {
+                finishingWorkflow = nil
+            }
+            return
+        }
+
         menuBarStatusResetTask?.cancel()
 
         switch phase {
