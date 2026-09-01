@@ -8,6 +8,24 @@ lives in `GriffelMac/project.yml` (`MARKETING_VERSION`) and is shown in the
 app under Einstellungen → Zugang → Installation & Updates. Releases are
 source-only — no binary is attached; build from the tag with `./build.sh`.
 
+## [1.5.1] - 2026-09-01
+
+### Fixed
+
+- The picked microphone is no longer silently overridden by the macOS default
+  input device. The recorder now verifies after starting that the engine
+  really opened the requested device, rebuilds the engine once when the pin
+  did not take, re-applies the device after Core Audio configuration changes
+  (e.g. Bluetooth devices connecting mid-recording), and labels an
+  unavoidable fallback honestly as "· Standardgerät" instead of claiming the
+  picked microphone.
+- A dictation ended by the silence auto-stop can no longer be lost. While the
+  transcript was still being produced, releasing the hold hotkey — or
+  pressing it again for the next dictation — cancelled the in-flight
+  transcription: nothing was pasted and nothing reached the clipboard. Both
+  gestures now leave the transcription alone; a follow-up dictation lets the
+  previous one finish on the side and paste its own result.
+
 ## [1.5.0] - 2026-08-30
 
 Initial public release.
