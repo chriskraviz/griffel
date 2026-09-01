@@ -45,6 +45,18 @@ final class HotkeyService {
     /// `fn+Shift` subset the user passes through on the way to it.
     private var sortedChords: [(type: WorkflowType, flags: NSEvent.ModifierFlags)] = []
 
+    /// A matched chord that is a strict subset of another chord, waiting out
+    /// the grace period. The modifiers of `fn+Option+Shift` arrive as separate
+    /// `flagsChanged` events, and whenever `fn+Shift` is complete for one event
+    /// the shorter chord would otherwise fire and lock out the longer one the
+    /// user is actually pressing.
+    private var pendingChord: WorkflowType?
+    private var pendingChordTask: Task<Void, Never>?
+
+    /// Longer than the rollover between modifiers pressed as one grip
+    /// (tens of ms), short enough that a held `fn+Shift` still feels instant.
+    private static let subsetChordGrace: Duration = .milliseconds(180)
+
     private var registrations: [WorkflowType: EventHotKeyRef] = [:]
     private var carbonHandler: EventHandlerRef?
     private var bindings: [String: Hotkey] = Hotkey.defaultBindings
@@ -93,6 +105,7 @@ final class HotkeyService {
     }
 
     func stop() {
+        cancelPendingChord()
         if let globalMonitor { NSEvent.removeMonitor(globalMonitor) }
         if let localMonitor { NSEvent.removeMonitor(localMonitor) }
         if let keyMonitor { NSEvent.removeMonitor(keyMonitor) }
@@ -116,6 +129,7 @@ final class HotkeyService {
     /// so a rebind takes effect without restarting the app.
     func apply(bindings: [String: Hotkey]) {
         self.bindings = bindings
+        cancelPendingChord()
         activeChord = nil
         activeKeyCombo = nil
 
@@ -133,6 +147,7 @@ final class HotkeyService {
     func suspend() {
         suspendCount += 1
         guard suspendCount == 1 else { return }
+        cancelPendingChord()
         activeChord = nil
         activeKeyCombo = nil
         unregisterAll()
@@ -152,11 +167,24 @@ final class HotkeyService {
         let flags = event.modifierFlags.intersection(Hotkey.relevantMask)
 
         if let match = sortedChords.first(where: { $0.flags == flags })?.type {
-            if activeChord == nil {
+            guard activeChord == nil, pendingChord != match else { return }
+            cancelPendingChord()
+            if hasStrictSupersetChord(of: flags) {
+                armPendingChord(match)
+            } else {
                 activeChord = match
                 onHotkeyEvent?(.down(match))
             }
             return
+        }
+
+        // Released while the grace period was still running: the chord counts
+        // as pressed. Committing it here turns a quick tap into the normal
+        // down/up pair — swallowing it would break toggle mode entirely.
+        if let pending = pendingChord {
+            cancelPendingChord()
+            activeChord = pending
+            onHotkeyEvent?(.down(pending))
         }
 
         if let chord = activeChord {
@@ -173,7 +201,32 @@ final class HotkeyService {
         }
     }
 
+    /// True when another chord needs strictly more modifiers on top of these —
+    /// only then is a grace period worth its delay.
+    private func hasStrictSupersetChord(of flags: NSEvent.ModifierFlags) -> Bool {
+        sortedChords.contains { $0.flags != flags && $0.flags.isSuperset(of: flags) }
+    }
+
+    private func armPendingChord(_ chord: WorkflowType) {
+        pendingChord = chord
+        pendingChordTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: Self.subsetChordGrace)
+            guard let self, !Task.isCancelled, let pending = self.pendingChord else { return }
+            self.pendingChord = nil
+            self.pendingChordTask = nil
+            self.activeChord = pending
+            self.onHotkeyEvent?(.down(pending))
+        }
+    }
+
+    private func cancelPendingChord() {
+        pendingChordTask?.cancel()
+        pendingChordTask = nil
+        pendingChord = nil
+    }
+
     private func handleEscape() {
+        cancelPendingChord()
         activeChord = nil
         activeKeyCombo = nil
         onHotkeyEvent?(.cancel)
