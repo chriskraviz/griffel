@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1088 460" role="img" aria-label="AppState sits between the views and hotkeys that call into it on the left, and the menu-bar, HUD and window controllers plus the stores it owns on the right.">
+  <title>Griffel — AppState as the switchboard</title>
+  <style>
+  :root {
+    --surface: #FFFFFF; --sunken: #E4E7F1; --ink: #171A26; --muted: #666C82;
+    --line: #D6D9E6; --on: #0E766C; --off: #B4451F;
+    color: var(--ink);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --surface: #161923; --sunken: #1F2432; --ink: #E6E8F2; --muted: #98A0B6;
+      --line: #2A2F3E; --on: #46C6B2; --off: #F08C5E;
+    }
+  }
+  .card { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+  .d-box { fill: var(--surface); stroke: var(--line); stroke-width: 1.4; }
+  .d-box-q { fill: var(--sunken); stroke: var(--line); stroke-width: 1.4; }
+  .d-box-on { fill: var(--surface); stroke: var(--on); stroke-width: 1.6; }
+  .d-box-off { fill: var(--surface); stroke: var(--off); stroke-width: 1.6; }
+  .d-t { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 13px; font-weight: 500; fill: var(--ink); }
+  .d-s { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 11.5px; fill: var(--muted); }
+  .d-l { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 10.5px; fill: var(--muted); }
+  .d-k { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 12px; fill: var(--muted); }
+  .d-on { fill: var(--on); }
+  .d-off { fill: var(--off); }
+  .w { stroke: currentColor; stroke-width: 1.4; fill: none; opacity: .55; }
+  .w-on { stroke: var(--on); stroke-width: 1.6; fill: none; }
+  .w-off { stroke: var(--off); stroke-width: 1.6; fill: none; }
+  .w-dash { stroke: currentColor; stroke-width: 1.2; fill: none; opacity: .45; stroke-dasharray: 4 4; }
+</style>
+  <rect class="card" x="0.75" y="0.75" width="1086.5" height="458.5" rx="6"/>
+  <g transform="translate(24,26)">
+      <defs>
+        <marker id="f3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="currentColor" opacity=".55"/></marker>
+      </defs>
+
+      <text x="40" y="24" class="d-l">talks to it</text>
+      <text x="750" y="24" class="d-l">driven by it</text>
+
+      <rect x="40" y="40" width="250" height="54" rx="3" class="d-box"/>
+      <text x="56" y="63" class="d-t">MenuBarView</text>
+      <text x="56" y="80" class="d-s">popover · workflow list · settings</text>
+
+      <rect x="40" y="110" width="250" height="54" rx="3" class="d-box"/>
+      <text x="56" y="133" class="d-t">HotkeyService</text>
+      <text x="56" y="150" class="d-s">global NSEvent + Carbon monitors</text>
+
+      <rect x="40" y="180" width="250" height="54" rx="3" class="d-box"/>
+      <text x="56" y="203" class="d-t">MainWindowView</text>
+      <text x="56" y="220" class="d-s">Ablage · drag-and-drop import</text>
+
+      <rect x="40" y="250" width="250" height="54" rx="3" class="d-box"/>
+      <text x="56" y="273" class="d-t">SettingsContainer</text>
+      <text x="56" y="290" class="d-s">settings.json · loaded once, saved on change</text>
+
+      <rect x="40" y="320" width="250" height="54" rx="3" class="d-box"/>
+      <text x="56" y="343" class="d-t">Workflow.onOutput</text>
+      <text x="56" y="360" class="d-s">the finished text comes back here</text>
+
+      <rect x="395" y="150" width="250" height="110" rx="3" class="d-box-q"/>
+      <text x="411" y="186" class="d-t">AppState</text>
+      <text x="411" y="208" class="d-s">@MainActor @Observable</text>
+      <text x="411" y="228" class="d-s">1,438 lines · resolves every</text>
+      <text x="411" y="245" class="d-s">setting before a run starts</text>
+
+      <rect x="750" y="40" width="250" height="54" rx="3" class="d-box"/>
+      <text x="766" y="63" class="d-t">MenuBarStatusController</text>
+      <text x="766" y="80" class="d-s">onMenuBarStatusChange</text>
+
+      <rect x="750" y="110" width="250" height="54" rx="3" class="d-box"/>
+      <text x="766" y="133" class="d-t">HotkeyHUDController</text>
+      <text x="766" y="150" class="d-s">onHUDEvent · floating waveform</text>
+
+      <rect x="750" y="180" width="250" height="54" rx="3" class="d-box"/>
+      <text x="766" y="203" class="d-t">MainWindowController</text>
+      <text x="766" y="220" class="d-s">onOpenMainWindow</text>
+
+      <rect x="750" y="250" width="250" height="54" rx="3" class="d-box"/>
+      <text x="766" y="273" class="d-t">LibraryStore · Queue</text>
+      <text x="766" y="290" class="d-s">owned outright, one per app run</text>
+
+      <rect x="750" y="320" width="250" height="54" rx="3" class="d-box"/>
+      <text x="766" y="343" class="d-t">Braindump · Stats · Phrase</text>
+      <text x="766" y="360" class="d-s">.shared singletons, local JSON</text>
+
+      <polyline points="290,67 345,67 345,205 391,205" class="w" marker-end="url(#f3a)"/>
+      <polyline points="290,137 345,137 345,205 391,205" class="w" marker-end="url(#f3a)"/>
+      <polyline points="290,207 345,207 345,205 391,205" class="w" marker-end="url(#f3a)"/>
+      <polyline points="290,277 345,277 345,205 391,205" class="w" marker-end="url(#f3a)" marker-start="url(#f3a)"/>
+      <polyline points="290,347 345,347 345,205 391,205" class="w" marker-end="url(#f3a)"/>
+
+      <polyline points="649,205 695,205 695,67 746,67" class="w" marker-end="url(#f3a)"/>
+      <polyline points="649,205 695,205 695,137 746,137" class="w" marker-end="url(#f3a)"/>
+      <polyline points="649,205 695,205 695,207 746,207" class="w" marker-end="url(#f3a)"/>
+      <polyline points="649,205 695,205 695,277 746,277" class="w" marker-end="url(#f3a)"/>
+      <polyline points="649,205 695,205 695,347 746,347" class="w" marker-end="url(#f3a)"/>
+    
+  </g>
+</svg>

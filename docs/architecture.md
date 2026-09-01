@@ -10,38 +10,7 @@ The numbers and names in this document were measured at v1.5.1 (70 Swift files, 
 
 A hotkey press lands in `AppState.startWorkflow`, which builds a workflow object with every setting already resolved — glossary terms, language code, transcription backend, LLM backend, format profile. The workflow itself never reads settings; it only owns a recorder and a chain of calls.
 
-```mermaid
-flowchart TD
-    HK["HotkeyService<br><i>fn chord · Carbon hotkey · Esc</i>"] -- "key down / key up" --> AS["AppState<br><i>startWorkflow(_:source:)</i>"]
-    AS -- "builds + wires handlers" --> WF["Workflow object<br><i>@MainActor @Observable</i>"]
-    WF -- "start()" --> REC["AudioRecorder<br><i>AVAudioEngine → AAC .m4a (temp)</i>"]
-    REC -. "16 kHz tap" .-> LIVE["LiveTranscriptionController<br><i>rolling partials · local only</i>"]
-    REC -. "level tap" .-> SIL["SilenceAutoStopService<br><i>auto-stop after a pause</i>"]
-    REC -- "stop() → finished file" --> TR{"Transcription<br><i>backend picked at build time</i>"}
-    TR -- "Sicherer Lokaler Modus" --> LTS["LocalTranscriptionService<br><i>WhisperKit · CoreML · on device</i>"]
-    TR -- "online" --> OAT["POST /v1/audio/transcriptions<br><i>whisper-1 · multipart upload</i>"]
-    LTS -- "cleaned transcript" --> RW
-    OAT -- "cleaned transcript" --> RW
-    RW{"Rewrite pass<br><i>Griffel+ · selection · app profile</i>"}
-    RW -- "Sicherer Lokaler Modus" --> LLM["LocalLLMService<br><i>MLX · Metal · Qwen3, in-process</i>"]
-    RW -- "online" --> OAC["POST /v1/chat/completions<br><i>gpt-4o-mini · gpt-4o</i>"]
-    LLM -- "final text" --> OUT
-    OAC -- "final text" --> OUT
-    OUT["handleWorkflowOutput<br><i>count · record · paste</i>"] --> SINK["PhraseStore · StatsStore<br><i>counts only, local JSON</i>"]
-    OUT -- "synthetic ⌘V at the caret" --> TGT["Target app"]
-
-    subgraph openai["api.openai.com — the only two stages that can leave the Mac"]
-        OAT
-        OAC
-    end
-
-    classDef local stroke:#149086,stroke-width:2px
-    classDef remote stroke:#c4632e,stroke-width:2px
-    classDef boundary stroke:#c4632e,stroke-width:1.5px,stroke-dasharray:6 5
-    class LTS,LLM,SINK,LIVE,SIL local
-    class OAT,OAC remote
-    class openai boundary
-```
+![A dictation run: hotkey to AppState to workflow to recorder, then transcription and rewriting each fork between an on-device model and an OpenAI endpoint across a dashed device boundary, ending in a paste into the target app.](diagrams/pipeline.svg)
 
 The same spine runs every workflow. Only the two model stages can cross to OpenAI — teal boxes never leave the Mac, and in Sicherer Lokaler Modus both forks swing to the teal side, so the dashed boundary is never crossed at all.
 
@@ -55,22 +24,7 @@ Two gates sit around transcription. `TranscriptionQualityService` rejects a reco
 
 The menu bar shows four workflows, but only three classes implement them. Griffel and Braindump are the same class recorded the same way — what separates them is which handler `AppState` wires to `onOutput`.
 
-```mermaid
-flowchart LR
-    G["Griffel<br><i>fn + Shift · speech in, text out</i>"] --> TW
-    B["Braindump<br><i>fn + Shift + Cmd · thought to inbox</i>"] --> TW
-    GP["Griffel+<br><i>fn + Ctrl · Korrektur or Lektorat</i>"] --> TIW
-    SE["Auswahl bearbeiten<br><i>fn + Opt + Shift · needs Accessibility</i>"] --> SEW
-
-    TW["TranscriptionWorkflow<br><i>two handler wirings</i>"]
-    TIW["TextImprovementWorkflow<br><i>record → transcribe → rewrite</i>"]
-    SEW["SelectionEditWorkflow<br><i>copies the selection first, then records</i>"]
-
-    TW -- "braindump handler" --> INBOX["braindump.json<br><i>local inbox, plus captured app / window</i>"]
-    TW -- "standard handler" --> PASTE["Paste at the caret<br><i>into the app that had focus</i>"]
-    TIW --> PASTE
-    SEW --> REPL["Selection replaced<br><i>clipboard restored afterwards</i>"]
-```
+![Four workflow types map onto three workflow classes; TranscriptionWorkflow serves both Griffel and Braindump and ends in either a paste or the local inbox depending on which output handler AppState attaches.](diagrams/workflows.svg)
 
 Griffel and Braindump run the identical recording and transcription path. `configureBraindumpHandlers` swaps the ending: no paste, an inbox entry with the app and window title it was spoken in. Selection edit is the only workflow that reads from the outside world before it records.
 
@@ -78,37 +32,7 @@ Griffel and Braindump run the identical recording and transcription path. `confi
 
 One 1,438-line `@Observable` class holds the settings, owns the library, and hands everything else its callbacks. The views read it, the controllers are driven by it, and the workflows report back into it. Nothing else knows about anything else.
 
-```mermaid
-flowchart LR
-    subgraph in["talks to it"]
-        MBV["MenuBarView<br><i>popover · workflow list · settings</i>"]
-        HKS["HotkeyService<br><i>global NSEvent + Carbon monitors</i>"]
-        MWV["MainWindowView<br><i>Ablage · drag-and-drop import</i>"]
-        SC["SettingsContainer<br><i>settings.json · loaded once, saved on change</i>"]
-        WO["Workflow.onOutput<br><i>the finished text comes back here</i>"]
-    end
-
-    AS["AppState<br><i>@MainActor @Observable · resolves every<br>setting before a run starts</i>"]
-
-    subgraph out["driven by it"]
-        MBS["MenuBarStatusController<br><i>onMenuBarStatusChange</i>"]
-        HUD["HotkeyHUDController<br><i>onHUDEvent · floating waveform</i>"]
-        MWC["MainWindowController<br><i>onOpenMainWindow</i>"]
-        LIB["LibraryStore · Queue<br><i>owned outright, one per app run</i>"]
-        ST["Braindump · Stats · Phrase stores<br><i>.shared singletons, local JSON</i>"]
-    end
-
-    MBV --> AS
-    HKS --> AS
-    MWV --> AS
-    SC <--> AS
-    WO --> AS
-    AS --> MBS
-    AS --> HUD
-    AS --> MWC
-    AS --> LIB
-    AS --> ST
-```
+![AppState sits between the views and hotkeys that call into it on the left, and the menu-bar, HUD and window controllers plus the stores it owns on the right.](diagrams/appstate.svg)
 
 The controllers never reach into each other; they receive closures. That is why the HUD, the menu-bar icon and the window can all show the same run without knowing it exists — and why `AppState` is the file that grows.
 
@@ -147,14 +71,7 @@ There is no library database. `LibraryFileStore.scan` walks the folder on every 
 
 ## From project.yml to a signed app
 
-```mermaid
-flowchart LR
-    YML["project.yml<br><i>targets, pins, entitlements</i>"] --> XG["xcodegen<br><i>generates .xcodeproj</i>"]
-    XG --> XB["xcodebuild<br><i>arm64 · Release</i>"]
-    SPM["SPM, exact pins<br><i>argmax-oss-swift · mlx-swift-lm<br>swift-huggingface · swift-transformers</i>"] -- "MLX compiles its Metal shaders here" --> XB
-    XB --> CS["codesign<br><i>ad-hoc, or a fixed identity</i>"]
-    CS --> APP["Griffel.app<br><i>--install → /Applications</i>"]
-```
+![Build pipeline: project.yml through XcodeGen and xcodebuild, which also pulls four pinned Swift packages, then codesign, producing Griffel.app.](diagrams/build.svg)
 
 `build.sh` checks for the Metal toolchain before anything else, because without it the build dies deep inside the MLX targets where the one useful line is buried. An ad-hoc signature has no stable identity, so every rebuild looks like a new app to macOS and re-asks for Microphone and Accessibility — set `GRIFFEL_CODESIGN_IDENTITY` to stop that (see the [README](../README.md#a-stable-signing-identity)).
 

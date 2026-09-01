@@ -15,8 +15,9 @@ source-only — no binary is attached; build from the tag with `./build.sh`.
 - `docs/architecture.md`: an illustrated architecture overview — the
   dictation pipeline end to end, the four-modes/three-classes workflow
   mapping, AppState as the switchboard, the on-disk layout, and the build
-  chain — drawn as Mermaid diagrams that GitHub renders natively. Linked
-  from the README (Data Flow, Project Structure) and CONTRIBUTING.
+  chain. The figures are hand-drawn SVGs in `docs/diagrams/` that adapt to
+  light and dark mode; the pipeline figure also opens the README's Data
+  Flow section. Linked from the README and CONTRIBUTING.
 
 ## [1.5.1] - 2026-09-01
 

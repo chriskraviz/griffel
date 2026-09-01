@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1088 450" role="img" aria-label="Four workflow types map onto three workflow classes; TranscriptionWorkflow serves both Griffel and Braindump and ends in either a paste or the local inbox depending on which output handler AppState attaches.">
+  <title>Griffel — four workflow types, three classes, three endings</title>
+  <style>
+  :root {
+    --surface: #FFFFFF; --sunken: #E4E7F1; --ink: #171A26; --muted: #666C82;
+    --line: #D6D9E6; --on: #0E766C; --off: #B4451F;
+    color: var(--ink);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --surface: #161923; --sunken: #1F2432; --ink: #E6E8F2; --muted: #98A0B6;
+      --line: #2A2F3E; --on: #46C6B2; --off: #F08C5E;
+    }
+  }
+  .card { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+  .d-box { fill: var(--surface); stroke: var(--line); stroke-width: 1.4; }
+  .d-box-q { fill: var(--sunken); stroke: var(--line); stroke-width: 1.4; }
+  .d-box-on { fill: var(--surface); stroke: var(--on); stroke-width: 1.6; }
+  .d-box-off { fill: var(--surface); stroke: var(--off); stroke-width: 1.6; }
+  .d-t { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 13px; font-weight: 500; fill: var(--ink); }
+  .d-s { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 11.5px; fill: var(--muted); }
+  .d-l { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 10.5px; fill: var(--muted); }
+  .d-k { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 12px; fill: var(--muted); }
+  .d-on { fill: var(--on); }
+  .d-off { fill: var(--off); }
+  .w { stroke: currentColor; stroke-width: 1.4; fill: none; opacity: .55; }
+  .w-on { stroke: var(--on); stroke-width: 1.6; fill: none; }
+  .w-off { stroke: var(--off); stroke-width: 1.6; fill: none; }
+  .w-dash { stroke: currentColor; stroke-width: 1.2; fill: none; opacity: .45; stroke-dasharray: 4 4; }
+</style>
+  <rect class="card" x="0.75" y="0.75" width="1086.5" height="448.5" rx="6"/>
+  <g transform="translate(24,26)">
+      <defs>
+        <marker id="f2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="currentColor" opacity=".55"/></marker>
+      </defs>
+
+      <text x="40" y="26" class="d-l">workflow type · default chord</text>
+      <text x="380" y="26" class="d-l">class</text>
+      <text x="720" y="26" class="d-l">where the text ends up</text>
+
+      <rect x="40" y="40" width="290" height="56" rx="3" class="d-box"/>
+      <circle cx="58" cy="60" r="4" fill="#3B82F6"/>
+      <text x="72" y="64" class="d-t">Griffel</text>
+      <text x="56" y="82" class="d-s">fn + Shift · speech in, text out</text>
+
+      <rect x="40" y="120" width="290" height="56" rx="3" class="d-box"/>
+      <circle cx="58" cy="140" r="4" fill="#EC4899"/>
+      <text x="72" y="144" class="d-t">Braindump</text>
+      <text x="56" y="162" class="d-s">fn + Shift + Cmd · thought to inbox</text>
+
+      <rect x="40" y="200" width="290" height="56" rx="3" class="d-box"/>
+      <circle cx="58" cy="220" r="4" fill="#8B5CF6"/>
+      <text x="72" y="224" class="d-t">Griffel+</text>
+      <text x="56" y="242" class="d-s">fn + Ctrl · Korrektur or Lektorat</text>
+
+      <rect x="40" y="280" width="290" height="56" rx="3" class="d-box"/>
+      <circle cx="58" cy="300" r="4" fill="#6366F1"/>
+      <text x="72" y="304" class="d-t">Auswahl bearbeiten</text>
+      <text x="56" y="322" class="d-s">fn + Opt + Shift · needs Accessibility</text>
+
+      <rect x="380" y="80" width="230" height="56" rx="3" class="d-box"/>
+      <text x="396" y="104" class="d-t">TranscriptionWorkflow</text>
+      <text x="396" y="122" class="d-s">two handler wirings</text>
+
+      <rect x="380" y="200" width="230" height="56" rx="3" class="d-box"/>
+      <text x="396" y="224" class="d-t">TextImprovement…</text>
+      <text x="396" y="242" class="d-s">record → transcribe → rewrite</text>
+
+      <rect x="380" y="280" width="230" height="56" rx="3" class="d-box"/>
+      <text x="396" y="304" class="d-t">SelectionEditWorkflow</text>
+      <text x="396" y="322" class="d-s">copy selection first, then record</text>
+
+      <rect x="720" y="40" width="290" height="56" rx="3" class="d-box"/>
+      <text x="736" y="64" class="d-t">braindump.json</text>
+      <text x="736" y="82" class="d-s">local inbox, plus captured app / window</text>
+
+      <rect x="720" y="140" width="290" height="56" rx="3" class="d-box"/>
+      <text x="736" y="164" class="d-t">Paste at the caret</text>
+      <text x="736" y="182" class="d-s">into the app that had focus</text>
+
+      <rect x="720" y="280" width="290" height="56" rx="3" class="d-box"/>
+      <text x="736" y="304" class="d-t">Selection replaced</text>
+      <text x="736" y="322" class="d-s">clipboard restored afterwards</text>
+
+      <!-- type -> class -->
+      <polyline points="330,68 355,68 355,100 376,100" class="w" marker-end="url(#f2a)"/>
+      <polyline points="330,148 355,148 355,116 376,116" class="w" marker-end="url(#f2a)"/>
+      <polyline points="330,228 376,228" class="w" marker-end="url(#f2a)"/>
+      <polyline points="330,308 376,308" class="w" marker-end="url(#f2a)"/>
+
+      <!-- class -> ending -->
+      <polyline points="610,100 665,100 665,68 716,68" class="w" marker-end="url(#f2a)"/>
+      <text x="668" y="58" class="d-l" text-anchor="middle">braindump handler</text>
+      <polyline points="610,120 665,120 665,168 716,168" class="w" marker-end="url(#f2a)"/>
+      <text x="663" y="140" class="d-l">standard handler</text>
+      <polyline points="610,228 665,228 665,180 716,180" class="w" marker-end="url(#f2a)"/>
+      <polyline points="610,308 716,308" class="w" marker-end="url(#f2a)"/>
+    
+  </g>
+</svg>

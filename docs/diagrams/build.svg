@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1088 250" role="img" aria-label="Build pipeline: project.yml through XcodeGen and xcodebuild, which also pulls four pinned Swift packages, then codesign, producing Griffel.app.">
+  <title>Griffel — build pipeline from project.yml to Griffel.app</title>
+  <style>
+  :root {
+    --surface: #FFFFFF; --sunken: #E4E7F1; --ink: #171A26; --muted: #666C82;
+    --line: #D6D9E6; --on: #0E766C; --off: #B4451F;
+    color: var(--ink);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --surface: #161923; --sunken: #1F2432; --ink: #E6E8F2; --muted: #98A0B6;
+      --line: #2A2F3E; --on: #46C6B2; --off: #F08C5E;
+    }
+  }
+  .card { fill: var(--surface); stroke: var(--line); stroke-width: 1.5; }
+  .d-box { fill: var(--surface); stroke: var(--line); stroke-width: 1.4; }
+  .d-box-q { fill: var(--sunken); stroke: var(--line); stroke-width: 1.4; }
+  .d-box-on { fill: var(--surface); stroke: var(--on); stroke-width: 1.6; }
+  .d-box-off { fill: var(--surface); stroke: var(--off); stroke-width: 1.6; }
+  .d-t { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 13px; font-weight: 500; fill: var(--ink); }
+  .d-s { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; font-size: 11.5px; fill: var(--muted); }
+  .d-l { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 10.5px; fill: var(--muted); }
+  .d-k { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 12px; fill: var(--muted); }
+  .d-on { fill: var(--on); }
+  .d-off { fill: var(--off); }
+  .w { stroke: currentColor; stroke-width: 1.4; fill: none; opacity: .55; }
+  .w-on { stroke: var(--on); stroke-width: 1.6; fill: none; }
+  .w-off { stroke: var(--off); stroke-width: 1.6; fill: none; }
+  .w-dash { stroke: currentColor; stroke-width: 1.2; fill: none; opacity: .45; stroke-dasharray: 4 4; }
+</style>
+  <rect class="card" x="0.75" y="0.75" width="1086.5" height="248.5" rx="6"/>
+  <g transform="translate(24,26)">
+      <defs>
+        <marker id="f4a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="currentColor" opacity=".55"/></marker>
+      </defs>
+
+      <rect x="20" y="34" width="180" height="58" rx="3" class="d-box"/>
+      <text x="36" y="58" class="d-t">project.yml</text>
+      <text x="36" y="76" class="d-s">targets, pins, entitlements</text>
+
+      <rect x="225" y="34" width="180" height="58" rx="3" class="d-box"/>
+      <text x="241" y="58" class="d-t">xcodegen</text>
+      <text x="241" y="76" class="d-s">generates .xcodeproj</text>
+
+      <rect x="430" y="34" width="180" height="58" rx="3" class="d-box"/>
+      <text x="446" y="58" class="d-t">xcodebuild</text>
+      <text x="446" y="76" class="d-s">arm64 · Release</text>
+
+      <rect x="635" y="34" width="180" height="58" rx="3" class="d-box"/>
+      <text x="651" y="58" class="d-t">codesign</text>
+      <text x="651" y="76" class="d-s">ad-hoc, or a fixed identity</text>
+
+      <rect x="840" y="34" width="180" height="58" rx="3" class="d-box"/>
+      <text x="856" y="58" class="d-t">Griffel.app</text>
+      <text x="856" y="76" class="d-s">--install → /Applications</text>
+
+      <line x1="200" y1="63" x2="221" y2="63" class="w" marker-end="url(#f4a)"/>
+      <line x1="405" y1="63" x2="426" y2="63" class="w" marker-end="url(#f4a)"/>
+      <line x1="610" y1="63" x2="631" y2="63" class="w" marker-end="url(#f4a)"/>
+      <line x1="815" y1="63" x2="836" y2="63" class="w" marker-end="url(#f4a)"/>
+
+      <rect x="300" y="128" width="440" height="52" rx="3" class="d-box"/>
+      <text x="316" y="150" class="d-t">SPM, exact pins</text>
+      <text x="316" y="168" class="d-s">argmax-oss-swift 1.1.0 · mlx-swift-lm 3.31.3 · swift-huggingface · swift-transformers</text>
+      <line x1="520" y1="128" x2="520" y2="96" class="w" marker-end="url(#f4a)"/>
+      <text x="534" y="116" class="d-l">MLX compiles its Metal shaders here</text>
+    
+  </g>
+</svg>
