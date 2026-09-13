@@ -24,9 +24,9 @@ struct HotkeyHUDView: View {
     let workflow: any Workflow
     let displayName: String
 
-    private static let popupWidth: CGFloat = 340
-    private static let orbDiameter: CGFloat = 46
-    private static let contentRowHeight: CGFloat = 24
+    private static let popupWidth: CGFloat = 320
+    private static let orbDiameter: CGFloat = 38
+    private static let contentRowHeight: CGFloat = 20
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var hasAppeared = false
@@ -36,7 +36,7 @@ struct HotkeyHUDView: View {
     private var accent: Color { workflow.type.accentUIColor }
 
     var body: some View {
-        HStack(alignment: .center, spacing: 13) {
+        HStack(alignment: .center, spacing: 11) {
             orb
 
             VStack(alignment: .leading, spacing: 5) {
@@ -55,7 +55,7 @@ struct HotkeyHUDView: View {
         }
         .padding(.leading, 11)
         .padding(.trailing, 16)
-        .padding(.vertical, 11)
+        .padding(.vertical, 9)
         .frame(width: Self.popupWidth)
         // Reserved strip for the tail, so no content sits inside it.
         .padding(.bottom, VoicePopupShape.Tail.bottom.height)
@@ -65,6 +65,7 @@ struct HotkeyHUDView: View {
         .padding(.horizontal, 18)
         .padding(.top, 14)
         .padding(.bottom, 20)
+        .preferredColorScheme(.light)
         .onAppear {
             guard !reduceMotion else {
                 hasAppeared = true
@@ -163,7 +164,8 @@ struct HotkeyHUDView: View {
     private var headerRow: some View {
         HStack(spacing: 8) {
             Text(displayName)
-                .font(.system(size: 12.5, weight: .semibold))
+                .font(.system(size: 11.5, weight: .semibold))
+                .tracking(0.2)
                 .foregroundStyle(.primary)
                 .lineLimit(1)
 

@@ -60,8 +60,18 @@ private struct SectionLabel: View {
 
     var body: some View {
         Text(text.uppercased())
-            .font(.system(size: 11, weight: .medium))
-            .foregroundStyle(.secondary)
+            .font(.system(size: 10, weight: .semibold))
+            .tracking(0.8)
+            .foregroundStyle(ProofDesk.ink.opacity(0.72))
+    }
+}
+
+private struct SettingsSectionRule: View {
+    var body: some View {
+        Rectangle()
+            .fill(ProofDesk.rule)
+            .frame(height: 1)
+            .accessibilityHidden(true)
     }
 }
 
@@ -80,9 +90,9 @@ struct AccessSettingsView: View {
     @State private var currentInstallLocation = InstallLocationService.currentInstallLocation
     @State private var openAIAPIKey = ""
     @State private var editingAPIKey = false
-    @State private var saved = false
     @State private var saveErrorText: String?
     @State private var installActionErrorText: String?
+    @State private var showsInstallDetails = false
     @State private var showCleanupOptions = false
     @State private var deleteLocalDataOnCleanup = true
     /// Off by default: recordings and transcripts are the user's own content,
@@ -93,9 +103,9 @@ struct AccessSettingsView: View {
     @FocusState private var focusedField: FieldFocus?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 8) {
-                SectionLabel(text: "Berechtigungen")
+                SectionLabel(text: "Direktes Einfügen")
 
                 HStack(alignment: .top, spacing: 8) {
                     Image(systemName: appState.accessibilityPermissionGranted ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
@@ -104,13 +114,13 @@ struct AccessSettingsView: View {
                         .frame(width: 18, height: 18)
 
                     VStack(alignment: .leading, spacing: 3) {
-                        Text(appState.accessibilityPermissionGranted ? "Direktes Einfügen ist freigegeben." : "Direktes Einfügen ist noch nicht freigegeben.")
+                        Text(appState.accessibilityPermissionGranted ? "Bereit für direktes Einfügen" : "Bedienungshilfen fehlen")
                             .font(.system(size: 11.5, weight: .semibold))
                             .foregroundStyle(.primary)
 
                         Text(appState.accessibilityPermissionGranted
                              ? "Griffel darf Text direkt in die aktive App einfügen."
-                             : "Öffne Bedienungshilfen und aktiviere Griffel. Falls Griffel schon aktiv ist, einmal aus- und wieder einschalten.")
+                             : "Erlaube Griffel den Zugriff, damit diktierter Text in der aktiven App landet.")
                             .font(.system(size: 10.5))
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -121,26 +131,39 @@ struct AccessSettingsView: View {
                 // back on its own if macOS revokes it after an update.
                 if !appState.accessibilityPermissionGranted {
                     HStack(spacing: 8) {
-                        Button("Bedienungshilfen öffnen") {
+                        Button {
                             appState.requestAccessibilityPermission()
+                        } label: {
+                            Label("Bedienungshilfen öffnen", systemImage: "hand.raised.fill")
                         }
-                        .buttonStyle(.secondary)
+                        .buttonStyle(.vc(
+                            .primary,
+                            .compact,
+                            tint: .orange,
+                            foreground: ProofDesk.onWarmAccent
+                        ))
 
-                        Button("Erneut prüfen") {
+                        Button {
                             appState.refreshAccessibilityPermission()
+                        } label: {
+                            Label("Status prüfen", systemImage: "arrow.clockwise")
                         }
-                        .buttonStyle(.quiet)
+                        .buttonStyle(.vc(.secondary, .compact))
                     }
                 }
             }
 
+            SettingsSectionRule()
+
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    SectionLabel(text: "OpenAI API Key")
+                    SectionLabel(text: "OpenAI")
                     Spacer()
                     if appState.hasValue(for: .openAIAPIKey) && !editingAPIKey {
-                        Button("\u{00C4}ndern") { editingAPIKey = true }
-                            .buttonStyle(.vc(.quiet, .compact))
+                        Button { editingAPIKey = true } label: {
+                            Label("Ändern", systemImage: "pencil")
+                        }
+                        .buttonStyle(.vc(.secondary, .compact))
                     }
                 }
 
@@ -165,15 +188,18 @@ struct AccessSettingsView: View {
                             .textFieldStyle(.roundedBorder)
                             .font(.system(size: 11.5))
                             .focused($focusedField, equals: .openAIAPIKey)
+                            .onSubmit(save)
 
-                        Button("Einf\u{00FC}gen") {
+                        Button {
                             pasteAPIKeyFromClipboard()
+                        } label: {
+                            Label("Einfügen", systemImage: "doc.on.clipboard")
                         }
-                        .buttonStyle(.secondary)
+                        .buttonStyle(.vc(.secondary, .compact))
                     }
                 }
 
-                Text("Dein Key bleibt lokal in dieser App. Audio und Text werden direkt an die OpenAI API gesendet.")
+                Text("Optional für den Online-Modus. Der Key liegt im macOS-Schlüsselbund. Im Online-Modus werden Audio und Text direkt an OpenAI gesendet.")
                     .font(.system(size: 10.5))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -185,28 +211,26 @@ struct AccessSettingsView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
-                // The tab's one commit action, next to the only field that
-                // needs it — everything else on this tab binds live.
-                HStack {
-                    Spacer()
-                    Button {
-                        save()
-                    } label: {
-                        HStack(spacing: 5) {
-                            if saved {
-                                Image(systemName: "checkmark")
-                                    .font(.system(size: 10, weight: .bold))
-                            }
-                            Text(saved ? "Gespeichert" : "API Key speichern")
+                if editingAPIKey || !appState.hasValue(for: .openAIAPIKey) {
+                    // The tab's one commit action, next to the only field that
+                    // needs it. It stays unavailable until the value is plausible.
+                    HStack {
+                        Spacer()
+                        Button {
+                            save()
+                        } label: {
+                            Label("Key speichern", systemImage: "key.fill")
                         }
+                        .buttonStyle(.vc(.primary, .compact))
+                        .disabled(!canSaveAPIKey)
                     }
-                    .buttonStyle(.vc(.primary, tint: saved ? .green : nil))
-                    .animation(.easeInOut(duration: 0.2), value: saved)
                 }
             }
 
+            SettingsSectionRule()
+
             VStack(alignment: .leading, spacing: 8) {
-                SectionLabel(text: "Installation & Updates")
+                SectionLabel(text: "App & Start")
 
                 Text(installationHeadline)
                     .font(.system(size: 11.5, weight: .semibold))
@@ -217,40 +241,41 @@ struct AccessSettingsView: View {
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text(InstallLocationService.bundleURL.path)
-                    .font(.system(size: 10.5, design: .monospaced))
-                    .foregroundStyle(.secondary)
-                    .textSelection(.enabled)
-
                 if !InstallLocationService.otherInstalledBundleURLs.isEmpty {
-                    Text("Weitere Griffel-Kopien auf diesem Mac können doppelte Login-Items auslösen.")
+                    Label("Weitere Griffel-Kopien können den automatischen Start doppelt auslösen.", systemImage: "exclamationmark.triangle.fill")
                         .font(.system(size: 10.5))
                         .foregroundStyle(.orange)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
                 // Lead action on its own row — three buttons never fit the
-                // 340pt popover side by side. Stays secondary: this tab's one
-                // primary is "API Key speichern" at the bottom.
+                // 340pt popover side by side. The API key remains the only
+                // explicit commit action on this tab.
                 VStack(alignment: .leading, spacing: 8) {
                     if InstallLocationService.shouldOfferMoveToApplications {
-                        Button("Nach /Applications bewegen") {
+                        Button {
                             moveToApplications()
+                        } label: {
+                            Label("In Programme verschieben", systemImage: "arrow.down.app")
                         }
-                        .buttonStyle(.secondary)
+                        .buttonStyle(.vc(.secondary, .compact, tint: .orange))
                     }
 
                     HStack(spacing: 8) {
-                        Button("Im Finder zeigen") {
+                        Button {
                             revealInFinder(urls: [InstallLocationService.bundleURL])
+                        } label: {
+                            Label("Im Finder zeigen", systemImage: "folder")
                         }
-                        .buttonStyle(.vc(.quiet, .compact))
+                        .buttonStyle(.vc(.secondary, .compact))
 
                         if !InstallLocationService.otherInstalledBundleURLs.isEmpty {
-                            Button("Weitere Kopien zeigen") {
+                            Button {
                                 revealInFinder(urls: InstallLocationService.otherInstalledBundleURLs)
+                            } label: {
+                                Label("Weitere Kopien", systemImage: "square.on.square")
                             }
-                            .buttonStyle(.vc(.quiet, .compact))
+                            .buttonStyle(.vc(.secondary, .compact))
                         }
                     }
                 }
@@ -262,28 +287,17 @@ struct AccessSettingsView: View {
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
-                Text("Version \(Self.appVersionText)")
-                    .font(.system(size: 10.5))
-                    .foregroundStyle(.secondary)
-                    .textSelection(.enabled)
+                Divider()
+                    .padding(.vertical, 4)
 
-                Text("Griffel hat keinen \u{00F6}ffentlichen Update-Feed \u{2014} baue neue Versionen selbst aus dem Repo.")
-                    .font(.system(size: 10.5))
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            // Launch at Login
-            VStack(alignment: .leading, spacing: 8) {
-                SectionLabel(text: "Beim Anmelden")
-
-                Toggle("Griffel automatisch starten", isOn: Binding(
+                Toggle("Beim Anmelden automatisch starten", isOn: Binding(
                     get: { launchAtLoginService.isEnabled },
                     set: { launchAtLoginService.setEnabled($0) }
                 ))
                 .toggleStyle(.switch)
+                .disabled(InstallLocationService.shouldOfferMoveToApplications)
 
-                Text(launchAtLoginService.errorText ?? launchAtLoginService.helperText)
+                Text(launchAtLoginHelperText)
                     .font(.system(size: 10.5))
                     .foregroundStyle(
                         launchAtLoginService.errorText == nil
@@ -298,12 +312,32 @@ struct AccessSettingsView: View {
                         .foregroundStyle(.orange)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+
+                DisclosureGroup("Technische Details", isExpanded: $showsInstallDetails) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(InstallLocationService.bundleURL.path)
+                            .font(.system(size: 10, design: .monospaced))
+                            .foregroundStyle(ProofDesk.metadataInk)
+                            .textSelection(.enabled)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        Text("Version \(Self.appVersionText) · Updates werden derzeit manuell installiert.")
+                            .font(.system(size: 10.5))
+                            .foregroundStyle(ProofDesk.metadataInk)
+                            .textSelection(.enabled)
+                    }
+                    .padding(.top, 5)
+                }
+                .font(.system(size: 10.5, weight: .medium))
+                .foregroundStyle(.secondary)
             }
 
-            VStack(alignment: .leading, spacing: 8) {
-                SectionLabel(text: "Sauber Entfernen")
+            SettingsSectionRule()
 
-                Text("Vor dem Löschen Griffel erst auf diesem Mac bereinigen. So verschwinden Anmeldestart und lokale Daten sauber aus dem Weg.")
+            VStack(alignment: .leading, spacing: 8) {
+                SectionLabel(text: "App entfernen")
+
+                Text("Vor dem Löschen kann Griffel Anmeldestart und lokale App-Daten entfernen. Deine Aufnahmen bleiben standardmäßig erhalten.")
                     .font(.system(size: 10.5))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -335,21 +369,27 @@ struct AccessSettingsView: View {
                         .fixedSize(horizontal: false, vertical: true)
 
                     HStack(spacing: 8) {
-                        Button("Jetzt bereinigen") {
+                        Button {
                             runCleanup()
+                        } label: {
+                            Label("Jetzt bereinigen", systemImage: "trash")
                         }
-                        .buttonStyle(.destructive)
+                        .buttonStyle(.destructive(.compact))
 
-                        Button("Abbrechen") {
+                        Button {
                             showCleanupOptions = false
+                        } label: {
+                            Label("Abbrechen", systemImage: "xmark")
                         }
-                        .buttonStyle(.quiet)
+                        .buttonStyle(.vc(.secondary, .compact))
                     }
                 } else {
-                    Button("Entfernung vorbereiten") {
+                    Button {
                         showCleanupOptions = true
+                    } label: {
+                        Label("Entfernung vorbereiten", systemImage: "trash")
                     }
-                    .buttonStyle(.secondary)
+                    .buttonStyle(.destructive(.compact))
                 }
 
                 if let cleanupStatusText {
@@ -375,9 +415,24 @@ struct AccessSettingsView: View {
             load()
             if !appState.hasValue(for: .openAIAPIKey) {
                 editingAPIKey = true
-                focusedField = .openAIAPIKey
             }
         }
+    }
+
+    private var canSaveAPIKey: Bool {
+        guard editingAPIKey || !appState.hasValue(for: .openAIAPIKey) else { return false }
+        let candidate = openAIAPIKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        return candidate.range(of: Self.openAIAPIKeyPattern, options: .regularExpression) != nil
+    }
+
+    private var launchAtLoginHelperText: String {
+        if let errorText = launchAtLoginService.errorText {
+            return errorText
+        }
+        if InstallLocationService.shouldOfferMoveToApplications {
+            return "Verfügbar, sobald Griffel im Ordner Programme liegt."
+        }
+        return launchAtLoginService.helperText
     }
 
     private func load() {
@@ -392,8 +447,10 @@ struct AccessSettingsView: View {
         let trimmedAPIKey = openAIAPIKey.trimmingCharacters(in: .whitespacesAndNewlines)
 
         if editingAPIKey || !appState.hasValue(for: .openAIAPIKey) {
-            guard !trimmedAPIKey.isEmpty else {
-                saveErrorText = "Bitte trage deinen OpenAI API Key ein."
+            guard trimmedAPIKey.range(of: Self.openAIAPIKeyPattern, options: .regularExpression) != nil else {
+                saveErrorText = trimmedAPIKey.isEmpty
+                    ? "Bitte trage deinen OpenAI API Key ein."
+                    : "Der OpenAI API Key ist nicht vollständig."
                 return
             }
             do {
@@ -412,10 +469,6 @@ struct AccessSettingsView: View {
             return
         }
 
-        withAnimation(.easeInOut(duration: 0.2)) { saved = true }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            withAnimation(.easeInOut(duration: 0.2)) { saved = false }
-        }
     }
 
     private func pasteAPIKeyFromClipboard() {
@@ -441,9 +494,9 @@ struct AccessSettingsView: View {
         case .applications:
             return "Griffel liegt am richtigen Ort."
         case .userApplications:
-            return "Griffel liegt noch in ~/Applications."
+            return "Griffel liegt noch nicht im Ordner Programme."
         case .outsideApplications:
-            return "Griffel liegt noch nicht in /Applications."
+            return "Griffel ist noch nicht installiert."
         case .unknown:
             return "Der Installationsort konnte nicht sicher erkannt werden."
         }
@@ -457,11 +510,11 @@ struct AccessSettingsView: View {
             }
             return "Diese Kopie ist korrekt. Zusätzliche Kopien solltest du später entfernen."
         case .userApplications:
-            return "F\u{00FC}r stabile Hotkeys und Login-Items sollte Griffel nur aus /Applications laufen."
+            return "Für zuverlässige Hotkeys und automatischen Start sollte Griffel im Ordner Programme liegen."
         case .outsideApplications:
-            return "Verschiebe Griffel einmal nach /Applications, damit Anmeldestart und Hotkeys sauber bleiben."
+            return "Verschiebe Griffel einmal in Programme, damit Hotkeys und automatischer Start zuverlässig funktionieren."
         case .unknown:
-            return "Öffne Griffel möglichst direkt aus /Applications."
+            return "Öffne Griffel möglichst direkt aus dem Ordner Programme."
         }
     }
 
@@ -580,7 +633,7 @@ struct CustomizeSettingsView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 18) {
 
             // MARK: Lokale Modelle
             // Inventory, not a second set of controls: mode, models and
@@ -613,6 +666,8 @@ struct CustomizeSettingsView: View {
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
+
+            SettingsSectionRule()
 
             // MARK: Ablage
             VStack(alignment: .leading, spacing: 10) {
@@ -668,6 +723,8 @@ struct CustomizeSettingsView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
+            SettingsSectionRule()
+
             // MARK: Braindump-Kontext
             VStack(alignment: .leading, spacing: 10) {
                 SectionLabel(text: "Braindump-Kontext")
@@ -690,6 +747,8 @@ struct CustomizeSettingsView: View {
                     .foregroundStyle(.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
             }
+
+            SettingsSectionRule()
 
             // MARK: Tastenkuerzel
             VStack(alignment: .leading, spacing: 10) {
@@ -818,6 +877,8 @@ struct CustomizeSettingsView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
+            SettingsSectionRule()
+
             // MARK: Griffel+
             VStack(alignment: .leading, spacing: 10) {
                 SectionLabel(text: "Griffel+")
@@ -907,6 +968,8 @@ struct CustomizeSettingsView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
+            SettingsSectionRule()
+
             // MARK: App-Profile
             VStack(alignment: .leading, spacing: 10) {
                 SectionLabel(text: "App-Profile")
@@ -972,6 +1035,8 @@ struct CustomizeSettingsView: View {
                     .fixedSize()
                 }
             }
+
+            SettingsSectionRule()
 
             // MARK: Wörterbuch
             VStack(alignment: .leading, spacing: 10) {

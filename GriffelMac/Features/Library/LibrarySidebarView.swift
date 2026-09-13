@@ -6,6 +6,10 @@ import SwiftUI
 struct LibrarySidebarView: View {
     @Bindable var appState: AppState
     @Bindable var filter: LibraryFilter
+    /// Parent workspaces such as Heute, Braindump and Statistik keep folders
+    /// visible as destinations without pretending one is the active route.
+    var isActive: Bool = true
+    var onScopeSelected: (() -> Void)? = nil
 
     @State private var editingFolder: String?
     @State private var draftName = ""
@@ -134,8 +138,9 @@ struct LibrarySidebarView: View {
         scope: LibraryFilter.Scope,
         folderName: String?
     ) -> some View {
-        let isSelected = filter.scope == scope
+        let isSelected = isActive && filter.scope == scope
         return Button {
+            onScopeSelected?()
             filter.scope = scope
         } label: {
             HStack(spacing: 7) {

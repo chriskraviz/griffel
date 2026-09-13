@@ -484,6 +484,9 @@ final class AppState {
         // the wrong reason.
         guard canImportAudio else { return [] }
 
+        // A new attempt owns the visible result. Keep an old failure from
+        // surviving beside a later successful import.
+        library.lastImportErrorText = nil
         var rejected: [URL] = []
         let configuration = makeImportConfiguration()
 

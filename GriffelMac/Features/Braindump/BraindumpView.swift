@@ -2,6 +2,9 @@ import SwiftUI
 
 struct BraindumpView: View {
     @Bindable var appState: AppState
+    /// The compact menu-bar surface needs its own capture entry point. In the
+    /// main window the persistent capture ribbon owns that action instead.
+    var showsCaptureHeader: Bool = true
     /// Whether entries can be filed into the library from here. Only the
     /// window offers it — the 340pt popover has no room for a fourth button in
     /// that row, and no folder selection to file into.
@@ -67,7 +70,9 @@ struct BraindumpView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
-                    recordCard
+                    if showsCaptureHeader {
+                        recordCard
+                    }
 
                     if let processedResult {
                         resultCard(processedResult)
@@ -125,11 +130,17 @@ struct BraindumpView: View {
                     Text("Aufnehmen")
                 }
             }
-            .buttonStyle(.vc(.primary, tint: WorkflowType.braindump.accentUIColor))
+            .buttonStyle(.vc(
+                .primary,
+                tint: WorkflowType.braindump.accentUIColor,
+                foreground: ProofDesk.onWarmAccent
+            ))
             .disabled(!appState.isWorkflowAvailable(.braindump))
         }
-        .padding(10)
-        .glassCard()
+        .padding(.vertical, 12)
+        .padding(.horizontal, 2)
+        .overlay(alignment: .top) { Rectangle().fill(ProofDesk.rule).frame(height: 1) }
+        .overlay(alignment: .bottom) { Rectangle().fill(ProofDesk.rule).frame(height: 1) }
     }
 
     // MARK: - Inbox
@@ -271,8 +282,9 @@ struct BraindumpView: View {
 
                 Spacer(minLength: 0)
             }
-            .padding(8)
-            .glassCard(radius: DS.radiusS)
+            .padding(.horizontal, 2)
+            .padding(.vertical, 10)
+            .overlay(alignment: .bottom) { Rectangle().fill(ProofDesk.rule).frame(height: 1) }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -293,7 +305,7 @@ struct BraindumpView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 22)
         .padding(.horizontal, 12)
-        .glassCard()
+        .overlay { Rectangle().strokeBorder(ProofDesk.rule, lineWidth: 1) }
     }
 
     // MARK: - Result
@@ -357,7 +369,8 @@ struct BraindumpView: View {
             }
         }
         .padding(10)
-        .glassCard()
+        .overlay(alignment: .top) { Rectangle().fill(ProofDesk.rule).frame(height: 1) }
+        .overlay(alignment: .bottom) { Rectangle().fill(ProofDesk.rule).frame(height: 1) }
     }
 
     /// The destination lives in the tooltip for the same reason „Ablegen"'s

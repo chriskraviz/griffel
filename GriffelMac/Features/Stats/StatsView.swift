@@ -8,6 +8,15 @@ struct StatsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("WIRKUNG")
+                        .font(ProofDesk.eyebrow)
+                        .tracking(1.1)
+                        .foregroundStyle(.secondary)
+                    Text("Deine Griffel-Bilanz")
+                        .font(.system(size: 24, weight: .semibold, design: .serif))
+                }
+
                 if store.events.isEmpty {
                     emptyState
                 } else {
@@ -27,6 +36,7 @@ struct StatsView: View {
             }
             .padding(16)
         }
+        .proofPaper(textureOpacity: 0.08)
     }
 
     private var emptyState: some View {
@@ -44,26 +54,26 @@ struct StatsView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 28)
         .padding(.horizontal, 12)
-        .glassCard()
+        .overlay(alignment: .top) { Rectangle().fill(ProofDesk.rule).frame(height: 1) }
     }
 
     private var statTiles: some View {
         LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible())], spacing: 8) {
-            statTile(value: formattedCount(store.totalWords), label: "Wörter gesamt", icon: "text.word.spacing", tint: .blue)
-            statTile(value: formattedCount(store.totalSessions), label: "Aufnahmen", icon: "mic.fill", tint: .purple)
-            statTile(value: formattedDuration(store.estimatedTimeSavedSeconds), label: "Zeit gespart", icon: "clock.arrow.circlepath", tint: .green)
-            statTile(value: formattedCount(store.averageWordsPerSession), label: "Ø Wörter je Aufnahme", icon: "chart.bar.fill", tint: .orange)
+            statTile(value: formattedCount(store.totalWords), label: "Wörter gesamt", icon: "text.word.spacing")
+            statTile(value: formattedCount(store.totalSessions), label: "Aufnahmen", icon: "mic.fill")
+            statTile(value: formattedDuration(store.estimatedTimeSavedSeconds), label: "Zeit gespart", icon: "clock.arrow.circlepath")
+            statTile(value: formattedCount(store.averageWordsPerSession), label: "Ø Wörter je Aufnahme", icon: "chart.bar.fill")
         }
     }
 
-    private func statTile(value: String, label: String, icon: String, tint: Color) -> some View {
+    private func statTile(value: String, label: String, icon: String) -> some View {
         VStack(alignment: .leading, spacing: 5) {
             Image(systemName: icon)
                 .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(tint)
+                .foregroundStyle(ProofDesk.blue)
 
             Text(value)
-                .font(.system(size: 17, weight: .bold, design: .rounded))
+                .font(.system(size: 22, weight: .semibold, design: .serif))
                 .foregroundStyle(.primary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
@@ -74,8 +84,9 @@ struct StatsView: View {
                 .lineLimit(2, reservesSpace: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(10)
-        .glassCard(radius: DS.radiusS)
+        .padding(.horizontal, 4)
+        .padding(.vertical, 12)
+        .overlay(alignment: .top) { Rectangle().fill(ProofDesk.rule).frame(height: 1) }
     }
 
     private var weeklyChartCard: some View {
@@ -89,8 +100,7 @@ struct StatsView: View {
                     x: .value("Woche", bucket.weekStart, unit: .weekOfYear),
                     y: .value("Wörter", bucket.words)
                 )
-                .foregroundStyle(Color.blue.gradient)
-                .cornerRadius(2)
+                .foregroundStyle(ProofDesk.blue.opacity(0.82))
             }
             .chartXAxis {
                 AxisMarks(values: .stride(by: .weekOfYear)) { _ in
@@ -107,8 +117,8 @@ struct StatsView: View {
             }
             .frame(height: 110)
         }
-        .padding(12)
-        .glassCard()
+        .padding(.vertical, 14)
+        .overlay(alignment: .top) { Rectangle().fill(ProofDesk.rule).frame(height: 1) }
     }
 
     private var workflowShareCard: some View {
@@ -124,7 +134,7 @@ struct StatsView: View {
                         innerRadius: .ratio(0.62),
                         angularInset: 1.2
                     )
-                    .foregroundStyle(by: .value("Workflow", share.name))
+                    .foregroundStyle(ProofDesk.blue.opacity(0.82))
                     .cornerRadius(2)
                 }
                 .chartLegend(.hidden)
@@ -146,8 +156,8 @@ struct StatsView: View {
                 }
             }
         }
-        .padding(12)
-        .glassCard()
+        .padding(.vertical, 14)
+        .overlay(alignment: .top) { Rectangle().fill(ProofDesk.rule).frame(height: 1) }
     }
 
     private var frequentPhrasesCard: some View {
@@ -179,8 +189,8 @@ struct StatsView: View {
                 }
             }
         }
-        .padding(12)
-        .glassCard()
+        .padding(.vertical, 14)
+        .overlay(alignment: .top) { Rectangle().fill(ProofDesk.rule).frame(height: 1) }
     }
 
     private func formattedCount(_ value: Int) -> String {

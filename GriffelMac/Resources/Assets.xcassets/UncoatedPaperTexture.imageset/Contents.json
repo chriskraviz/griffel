@@ -1,0 +1,18 @@
+{
+  "images" : [
+    {
+      "filename" : "uncoated-paper-texture.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "uncoated-paper-texture@2x.png",
+      "idiom" : "universal",
+      "scale" : "2x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

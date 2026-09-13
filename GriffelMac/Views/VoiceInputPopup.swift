@@ -95,8 +95,7 @@ struct VoicePopupShape: InsettableShape {
 
 // MARK: - Surface
 
-/// Glass surface for the popup: behind-window blur, a wash of the workflow
-/// tint, a hairline light edge and a lifted shadow.
+/// Compact native proof slip for the background capture HUD.
 ///
 /// Unlike `glassCard`, the reduce-transparency fallback is *opaque*: the popup
 /// floats in a borderless panel over the desktop, where a 5 % primary fill
@@ -113,18 +112,19 @@ struct VoicePopupSurface: ViewModifier {
             .background {
                 ZStack {
                     shape.fill(shadowedBase)
-                    shape.fill(tintWash)
+                    shape.fill(ProofDesk.paper.opacity(0.88))
+                    shape.fill(tint.opacity(0.045))
                 }
             }
             .overlay {
-                shape.strokeBorder(edge, lineWidth: 0.9)
+                shape.strokeBorder(Color.black.opacity(0.16), lineWidth: 0.8)
             }
     }
 
     private var base: AnyShapeStyle {
         reduceTransparency
-            ? AnyShapeStyle(Color(nsColor: .windowBackgroundColor))
-            : AnyShapeStyle(.ultraThinMaterial)
+            ? AnyShapeStyle(ProofDesk.paper)
+            : AnyShapeStyle(.thinMaterial)
     }
 
     /// The shadows ride on the *shape style*, not on a `.shadow` modifier
@@ -133,28 +133,9 @@ struct VoicePopupSurface: ViewModifier {
     /// of the desktop behind the panel — the blur would quietly die.
     private var shadowedBase: some ShapeStyle {
         base
-            .shadow(.drop(color: .black.opacity(scheme == .dark ? 0.42 : 0.16), radius: 9, y: 4))
-            .shadow(.drop(color: tint.opacity(scheme == .dark ? 0.24 : 0.18), radius: 18, y: 7))
+            .shadow(.drop(color: .black.opacity(scheme == .dark ? 0.42 : 0.14), radius: 8, y: 4))
     }
 
-    private var tintWash: LinearGradient {
-        LinearGradient(
-            colors: [tint.opacity(scheme == .dark ? 0.20 : 0.14), tint.opacity(0.05)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-    }
-
-    private var edge: LinearGradient {
-        LinearGradient(
-            colors: [
-                Color.white.opacity(scheme == .dark ? 0.34 : 0.62),
-                Color.white.opacity(scheme == .dark ? 0.06 : 0.16),
-            ],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-    }
 }
 
 extension View {

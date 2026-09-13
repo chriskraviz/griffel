@@ -27,7 +27,8 @@ struct TagChip: View {
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.chip)
-                .help("Tag entfernen")
+                .accessibilityLabel("Tag \(name) entfernen")
+                .help("Tag \(name) entfernen")
             }
         }
         .overlay(

@@ -8,6 +8,57 @@ enum DS {
     static let radiusL: CGFloat = 16
 }
 
+// MARK: - Proof Desk
+
+/// The editorial world shared by the window, popover and HUD. These colours
+/// deliberately stay a little warmer and quieter than the system palette;
+/// interaction blue and recording red are the only saturated accents.
+enum ProofDesk {
+    static let paper = Color(red: 0.961, green: 0.949, blue: 0.929)
+    static let sidebar = Color(red: 0.945, green: 0.945, blue: 0.937)
+    static let ledger = Color(red: 0.922, green: 0.914, blue: 0.902)
+    static let selection = Color(red: 0.933, green: 0.953, blue: 0.984)
+    static let blue = Color(red: 0.0, green: 0.38, blue: 0.99)
+    static let red = Color(red: 0.996, green: 0.325, blue: 0.31)
+    static let marker = Color(red: 0.745, green: 0.804, blue: 0.565)
+    static let ink = Color(red: 0.105, green: 0.102, blue: 0.094)
+    /// Small utility copy must remain readable on every paper tone. At 64%
+    /// this clears 4.5:1 even on the darker ledger surface.
+    static let metadataInk = ink.opacity(0.64)
+    /// Warm semantic fills are intentionally bright; dark ink is their
+    /// accessible foreground rather than forcing white onto every primary.
+    static let onWarmAccent = ink
+    static let rule = Color.black.opacity(0.105)
+
+    static let eyebrow = Font.system(size: 9.5, weight: .semibold)
+    static let utility = Font.system(size: 11)
+    static let editorialTitle = Font.system(size: 29, weight: .semibold, design: .serif)
+    static let editorialBody = Font.system(size: 16, weight: .regular, design: .serif)
+}
+
+struct PaperSurfaceModifier: ViewModifier {
+    var textureOpacity: Double = 0.12
+
+    func body(content: Content) -> some View {
+        content.background {
+            ZStack {
+                ProofDesk.paper
+                Rectangle()
+                    .fill(ImagePaint(image: Image("UncoatedPaperTexture"), scale: 1))
+                    .opacity(textureOpacity)
+                    .accessibilityHidden(true)
+                    .allowsHitTesting(false)
+            }
+        }
+    }
+}
+
+extension View {
+    func proofPaper(textureOpacity: Double = 0.12) -> some View {
+        modifier(PaperSurfaceModifier(textureOpacity: textureOpacity))
+    }
+}
+
 // MARK: - Keycap Tokens
 
 /// Surface tokens for the keycap look shared by `HotkeyBadge` and every
@@ -85,11 +136,21 @@ struct VCButtonStyle: ButtonStyle {
     /// Drives label, fill and stroke together. Defaults to the system accent
     /// for `.primary` and to the neutral keycap for the other roles.
     var tint: Color?
+    /// Optional semantic foreground for bright fills such as recording red
+    /// and marker green. Primary no longer implies that white must be legible.
+    var foreground: Color?
     /// Fill the available width instead of hugging the label.
     var fill: Bool = false
 
     func makeBody(configuration: Configuration) -> some View {
-        KeycapSurface(configuration: configuration, role: role, size: size, tint: tint, fill: fill)
+        KeycapSurface(
+            configuration: configuration,
+            role: role,
+            size: size,
+            tint: tint,
+            foreground: foreground,
+            fill: fill
+        )
     }
 
     /// Holds the hover state a `ButtonStyle` value cannot own itself.
@@ -98,6 +159,7 @@ struct VCButtonStyle: ButtonStyle {
         let role: VCButtonRole
         let size: VCButtonSize
         let tint: Color?
+        let foreground: Color?
         let fill: Bool
 
         @State private var isHovered = false
@@ -156,10 +218,11 @@ struct VCButtonStyle: ButtonStyle {
             guard isEnabled else { return Keycap.label(scheme, enabled: false) }
             switch role {
             case .primary:
-                return .white
+                return foreground ?? .white
             case .secondary:
-                return tint ?? Keycap.label(scheme)
+                return foreground ?? tint ?? Keycap.label(scheme)
             case .quiet:
+                if let foreground { return foreground }
                 if let tint { return tint }
                 return isHovered ? Keycap.label(scheme) : Color.secondary
             }
@@ -246,9 +309,10 @@ extension ButtonStyle where Self == VCButtonStyle {
         _ role: VCButtonRole,
         _ size: VCButtonSize = .regular,
         tint: Color? = nil,
+        foreground: Color? = nil,
         fill: Bool = false
     ) -> VCButtonStyle {
-        VCButtonStyle(role: role, size: size, tint: tint, fill: fill)
+        VCButtonStyle(role: role, size: size, tint: tint, foreground: foreground, fill: fill)
     }
 }
 
@@ -303,8 +367,9 @@ extension ButtonStyle where Self == ChipButtonStyle {
 
 // MARK: - Glass Card
 
-/// Translucent "glass" surface: material fill, gradient edge highlight and a
-/// soft shadow. Falls back to a solid fill when the user reduces transparency.
+/// Legacy call-site name, now rendered as a planar proof slip. Keeping the
+/// modifier avoids a risky all-at-once rewrite while removing dashboard glass
+/// from every secondary surface in the product.
 struct GlassCardModifier: ViewModifier {
     var radius: CGFloat = DS.radiusM
     var tint: Color?
@@ -315,31 +380,20 @@ struct GlassCardModifier: ViewModifier {
         content
             .background(
                 cardBackground
-                    .shadow(color: Color.black.opacity(0.10), radius: 5, y: 2)
+                    .shadow(color: Color.black.opacity(0.035), radius: 2, y: 1)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: radius, style: .continuous)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [Color.white.opacity(0.28), Color.white.opacity(0.04)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 0.8
-                    )
+                    .strokeBorder(tint?.opacity(0.28) ?? ProofDesk.rule, lineWidth: 0.7)
             )
     }
 
     private var cardBackground: some View {
         let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
         return ZStack {
-            if reduceTransparency {
-                shape.fill(Color.primary.opacity(0.05))
-            } else {
-                shape.fill(.ultraThinMaterial)
-            }
+            shape.fill(reduceTransparency ? ProofDesk.paper : Color.white.opacity(0.42))
             if let tint {
-                shape.fill(tint.opacity(0.08))
+                shape.fill(tint.opacity(0.065))
             }
         }
     }
@@ -353,7 +407,7 @@ extension View {
 
 // MARK: - Glass Chip
 
-/// Small capsule chip for terms and tags.
+/// Small metadata lozenge. It is intentionally flat and typographic.
 struct GlassChip<Content: View>: View {
     @ViewBuilder var content: Content
 
@@ -366,14 +420,10 @@ struct GlassChip<Content: View>: View {
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
         .background {
-            if reduceTransparency {
-                Capsule().fill(Color.primary.opacity(0.06))
-            } else {
-                Capsule().fill(.ultraThinMaterial)
-            }
+            Capsule().fill(reduceTransparency ? ProofDesk.paper : Color.black.opacity(0.035))
         }
         .overlay(
-            Capsule().strokeBorder(Color.white.opacity(0.16), lineWidth: 0.6)
+            Capsule().strokeBorder(ProofDesk.rule, lineWidth: 0.6)
         )
     }
 }

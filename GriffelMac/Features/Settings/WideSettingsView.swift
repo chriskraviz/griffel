@@ -41,7 +41,7 @@ struct WideSettingsView: View {
         var blurb: String {
             switch self {
             case .customize: return "Kurzbefehle, Wörterbuch, Prompts"
-            case .access: return "Berechtigungen, API-Key, Ablage"
+            case .access: return "Freigaben, Online-Zugang, App"
             }
         }
     }

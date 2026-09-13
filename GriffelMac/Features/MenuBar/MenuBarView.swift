@@ -23,15 +23,9 @@ struct MenuBarView: View {
             }
         }
         .frame(width: 340)
-        .background(alignment: .top) {
-            LinearGradient(
-                colors: [Color.white.opacity(0.07), .clear],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .frame(height: 140)
-            .allowsHitTesting(false)
-        }
+        .proofPaper(textureOpacity: 0.08)
+        .tint(ProofDesk.blue)
+        .preferredColorScheme(.light)
         .animation(.easeInOut(duration: 0.2), value: appState.page)
     }
 
@@ -43,9 +37,16 @@ struct MenuBarView: View {
             VStack(spacing: 0) {
                 // Top bar
                 HStack {
-                    Text("Griffel")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("GRIFFEL")
+                            .font(.system(size: 11, weight: .bold))
+                            .tracking(1.2)
+                            .foregroundStyle(ProofDesk.ink)
+                        Text("BEREIT ZUM DIKTIEREN")
+                            .font(.system(size: 8.5, weight: .medium))
+                            .tracking(0.7)
+                            .foregroundStyle(.tertiary)
+                    }
 
                     Spacer()
 
@@ -70,9 +71,8 @@ struct MenuBarView: View {
                 .padding(.top, 12)
                 .padding(.bottom, 8)
             }
-            .background(
-                Color(nsColor: .controlBackgroundColor).opacity(0.5)
-            )
+            .background(Color.white.opacity(0.26))
+            .overlay(alignment: .bottom) { Rectangle().fill(ProofDesk.rule).frame(height: 1) }
 
             if InstallLocationService.shouldOfferMoveToApplications {
                 installHintBanner
@@ -371,7 +371,7 @@ struct MenuBarView: View {
                         Text("Einmal einrichten, dann direkt loslegen.")
                             .font(.system(size: 14, weight: .semibold))
                             .foregroundStyle(.primary)
-                        Text("Eigenen OpenAI API Key eintragen. Danach sprechen und einfügen.")
+                        Text("Wähle lokal auf deinem Mac oder online mit eigenem API‑Key. Danach sprichst du direkt in jede App.")
                             .font(.system(size: 11.5))
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -383,9 +383,9 @@ struct MenuBarView: View {
                         onboardingInstallCard
                     }
 
-                    onboardingStep(number: "1", title: "OpenAI Key speichern", detail: "Öffne die Einstellungen und trage deinen eigenen OpenAI API Key ein.")
-                    onboardingStep(number: "2", title: "Berechtigungen erlauben", detail: "Mikrofon und Bedienungshilfen für das Einfügen freigeben.")
-                    onboardingStep(number: "3", title: "Workflow wählen", detail: "Griffel oder einen der Verbesserer-Workflows direkt aus der Menüleiste starten.")
+                    onboardingStep(number: "1", title: "Verarbeitung wählen", detail: "Lokal lädt Griffels Modelle auf deinen Mac. Online nutzt deinen eigenen OpenAI API‑Key.")
+                    onboardingStep(number: "2", title: "Mikrofon erlauben", detail: "Für Diktate braucht Griffel Zugriff auf dein Mikrofon.")
+                    onboardingStep(number: "3", title: "Einfügen aktivieren", detail: "Bedienungshilfen sind optional und fügen das Ergebnis direkt in andere Apps ein.")
                 }
 
                 HStack(spacing: 8) {
@@ -468,7 +468,7 @@ struct MenuBarView: View {
                     .font(.system(size: 12, weight: .semibold))
 
                 Spacer()
-                settingsQuickAction
+                HeaderSpacer()
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
@@ -480,24 +480,6 @@ struct MenuBarView: View {
             Spacer(minLength: 0)
 
             appFooter
-        }
-    }
-
-    @ViewBuilder
-    private var settingsQuickAction: some View {
-        if !appState.accessibilityPermissionGranted {
-            Button {
-                appState.requestAccessibilityPermission()
-            } label: {
-                HStack(spacing: 4) {
-                    Image(systemName: "hand.raised")
-                        .font(.system(size: 10, weight: .semibold))
-                    Text("Freigeben")
-                }
-            }
-            .buttonStyle(.vc(.secondary, tint: .orange))
-        } else {
-            HeaderSpacer()
         }
     }
 
