@@ -60,18 +60,24 @@ The intent is not to ship a one-click finished app. The intent is to make a real
 
 <table>
   <tr>
-    <td><img src="docs/screenshots/local-mode.png" alt="Popover main page in Sicherer Lokaler Modus: mode card with microphone and both local models, workflow list with hotkey badges" width="420"></td>
-    <td><img src="docs/screenshots/online-mode.png" alt="Popover main page in online mode before an API key is entered — the card offers exactly one action" width="420"></td>
+    <td><img src="docs/screenshots/01-tageslauf.png" alt="Daily overview screen showing the main library and the empty draft workspace" width="420"></td>
+    <td><img src="docs/screenshots/02-ablage.png" alt="Library view showing recorded items, topic folders, and the list of filed audio snippets" width="420"></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/settings-customize.png" alt="Settings, Anpassen half: installed local models and library location" width="420"></td>
-    <td><img src="docs/screenshots/settings-access.png" alt="Settings, Zugang half: permissions, API key entry, install location and version" width="420"></td>
+    <td><img src="docs/screenshots/03-statistik.png" alt="Stats screen with usage overview, phrasing suggestions, and capture metrics" width="420"></td>
+    <td><img src="docs/screenshots/04-braindump.png" alt="Braindump workspace for collecting spoken notes and organizing captured ideas" width="420"></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/06-einstellungen-anpassen.png" alt="Customize settings view with local model setup, library path, and capture preferences" width="420"></td>
+    <td><img src="docs/screenshots/07-prompts.png" alt="Prompt editor screen with the text-generation presets and local addendum settings" width="420"></td>
   </tr>
 </table>
 
-<img src="docs/screenshots/library-window.png" alt="The app window: topic folders, the recordings list with drag-and-drop import, and the Braindump inbox side by side">
+<div align="center">
+  <img src="docs/screenshots/08-HUD.png" alt="Floating microphone HUD while a hotkey-based recording session is active" width="760">
+</div>
 
-The main page carries the one decision — where dictation is processed — as a Lokal/Online control on a single card, together with the microphone and both local models; modes the current setup cannot run are hidden rather than greyed out. The window shows the Ablage's three columns: topic folders, filed recordings, and the Braindump inbox.
+The core workflow stays simple: one decision on the main card for local vs. online processing, plus the microphone and local-model status. The library window then exposes the folders, recording list, and Braindump inbox in one place.
 
 ## Requirements
 
